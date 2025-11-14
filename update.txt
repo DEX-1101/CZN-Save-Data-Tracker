@@ -1,0 +1,3 @@
+13 November 2025
+- Initial Released
+- Currently, there is an issue when calculating a natural card that has divine epiphany, you might expect more points added, eg. +10 points more.
