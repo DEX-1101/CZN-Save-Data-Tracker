@@ -1,6 +1,6 @@
-## CZN Save Data Tracker
+## Chaos Zero Nightmare Save Data Tracker
 
-CZN Save Data Tracker is a lightweight web tool designed to help you calculate and track Faint Memory points so you can easily decide which cards to keep in your deck. 
+Chaos Zero Nightmare Save Data Tracker is a lightweight web tool designed to help you calculate and track Faint Memory points so you can easily decide which cards to keep in your deck. 
 
 ## How To Calculate or Use?
 1. Visit: https://czn-save-data-tracker.vercel.app/
