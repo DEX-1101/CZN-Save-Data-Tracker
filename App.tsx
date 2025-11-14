@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import type { CalculatorState } from './types';
 import { DEFAULT_POINTS, calculateSpecialPoints, calculateTierLimit, TIER_OPTIONS } from './constants';
 
@@ -125,6 +125,19 @@ const MinusIcon = () => (
 const WarningIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
         <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+    </svg>
+);
+
+const GithubIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8"/>
+  </svg>
+);
+
+const QuestionIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+        <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
     </svg>
 );
 
@@ -400,6 +413,56 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ onConfirm, onCanc
     );
 };
 
+// Update Log Modal Component
+interface UpdateLogModalProps {
+    onClose: () => void;
+    logContent: string;
+    isLoading: boolean;
+    error: string | null;
+    onRefresh: () => void;
+}
+
+const UpdateLogModal: React.FC<UpdateLogModalProps> = ({ onClose, logContent, isLoading, error, onRefresh }) => {
+    return (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 fade-in">
+            <div className="card-container w-full max-w-lg rounded-2xl p-4 sm:p-6 flex flex-col gap-4" role="dialog" aria-modal="true" aria-labelledby="update-log-title">
+                <div className="flex justify-between items-center">
+                    <h2 id="update-log-title" className="text-xl font-bold text-white">Update Log</h2>
+                    <div className="flex items-center gap-1">
+                        <Tooltip text="Refresh Log">
+                            <button onClick={onRefresh} className={`text-slate-400 hover:text-white p-2 rounded-full hover:bg-white/10 transition-transform duration-500 ${isLoading ? 'animate-spin' : 'hover:scale-110'}`} aria-label="Refresh update log" disabled={isLoading}>
+                                <ResetIcon />
+                            </button>
+                        </Tooltip>
+                        <button onClick={onClose} className="text-slate-400 hover:text-white p-2 text-2xl leading-none" aria-label="Close update log">&times;</button>
+                    </div>
+                </div>
+                <div className="bg-[var(--input-bg)] rounded-lg p-4 max-h-[75vh] sm:max-h-[60vh] overflow-y-auto pr-2 border border-slate-700/50 min-h-[12rem] flex flex-col">
+                    {isLoading ? (
+                        <div className="flex-grow flex justify-center items-center">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-400"></div>
+                        </div>
+                    ) : error ? (
+                         <div className="flex-grow flex flex-col justify-center items-center text-center p-4">
+                            <p className="text-red-400 font-semibold">Failed to Load Updates</p>
+                            <p className="text-slate-400 text-xs mt-1">{error}</p>
+                            <button onClick={onRefresh} className="mt-4 text-sm bg-red-500/20 text-red-300 hover:bg-red-500/40 px-4 py-2 rounded-lg transition-colors font-semibold">
+                                Try Again
+                            </button>
+                        </div>
+                    ) : (
+                        <pre className="text-slate-300 text-sm whitespace-pre-wrap font-sans leading-relaxed">{logContent}</pre>
+                    )}
+                </div>
+                <div className="flex justify-end gap-4 mt-2">
+                    <button onClick={onClose} className="w-full sm:w-auto p-3 px-8 rounded-lg bg-[var(--accent-color)] text-white hover:bg-blue-500 transition-colors duration-200 font-semibold">Done</button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
 // Main App component
 const App: React.FC = () => {
     const initialCalculatorState: Omit<CalculatorState, 'characterName'> = {
@@ -413,6 +476,11 @@ const App: React.FC = () => {
     const [rules, setRules] = useState<Rules>(DEFAULT_POINTS);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
+    const [isUpdateLogOpen, setIsUpdateLogOpen] = useState(false);
+
+    const [logContent, setLogContent] = useState<string>('');
+    const [isLogLoading, setIsLogLoading] = useState(false);
+    const [logError, setLogError] = useState<string | null>(null);
 
     const handleCalculatorUpdate = (index: number) => <K extends keyof CalculatorState>(
         field: K,
@@ -479,6 +547,30 @@ const App: React.FC = () => {
         }
     };
 
+    const fetchLog = async () => {
+        setIsLogLoading(true);
+        setLogError(null);
+        try {
+            // Add a cache-busting query param to ensure it's always fresh
+            const response = await fetch(`https://raw.githubusercontent.com/DEX-1101/CZN-Save-Data-Tracker/refs/heads/main/update.txt?_=${new Date().getTime()}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const text = await response.text();
+            setLogContent(text);
+        } catch (e) {
+            console.error("Failed to fetch update log:", e);
+            setLogError(e instanceof Error ? e.message : 'An unknown error occurred.');
+        } finally {
+            setIsLogLoading(false);
+        }
+    };
+
+    const handleOpenUpdateLog = () => {
+        fetchLog();
+        setIsUpdateLogOpen(true);
+    };
+
     return (
         <div className="min-h-screen flex flex-col">
             <header className="relative w-full p-6 sm:p-8 text-center border-b border-[var(--border-color)]">
@@ -489,7 +581,21 @@ const App: React.FC = () => {
                     A tool to calculate and track your Faint Memory points to control which card you want to keep in your deck. Enter your card counts for the Combatant to see if you are hitting the save data limit or not. Tools based on this <a href="https://www.reddit.com/r/ChaosZeroNightmare/comments/1ovg538/i_create_the_deck_builder_app_in_case_you_guys" target="_blank" rel="noopener noreferrer" className="text-[var(--accent-color)] hover:underline">reddit</a> post.
                 </p>
             </header>
-            <main className="flex-grow text-white flex flex-wrap items-start justify-center p-4 gap-4 sm:p-8 sm:gap-8">
+
+            <div className="w-full flex justify-center py-6">
+                <a
+                    href="https://raw.githubusercontent.com/DEX-1101/CZN-Save-Data-Tracker/refs/heads/main/exx.jpg"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 bg-[var(--card-bg-color)] border border-[var(--border-color)] text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-500/30 hover:border-blue-400 transition-all duration-300 font-semibold backdrop-filter backdrop-blur-lg"
+                    aria-label="How To Use Guide"
+                >
+                    <QuestionIcon />
+                    <span>How To Use</span>
+                </a>
+            </div>
+
+            <main className="flex-grow text-white flex flex-wrap items-start justify-center px-4 pb-4 gap-4 sm:px-8 sm:pb-8 sm:gap-8">
                 {calculators.map((calc, index) => (
                     <CalculatorInstance
                         key={index} // Using index is safe here as we only add/remove from the end.
@@ -508,13 +614,33 @@ const App: React.FC = () => {
             </main>
 
             <footer className="w-full p-6 flex justify-center">
-                <button
-                    onClick={() => setIsSettingsOpen(true)}
-                    className="bg-[var(--card-bg-color)] border border-[var(--border-color)] text-white px-6 py-3 rounded-full shadow-2xl hover:bg-blue-500/30 hover:border-blue-400 transition-all duration-300 font-semibold backdrop-filter backdrop-blur-lg"
-                    aria-label="Edit Point Rules"
-                >
-                    Edit Point Rule
-                </button>
+                <div className="flex flex-col sm:flex-row gap-4 items-center">
+                    <button
+                        onClick={() => setIsSettingsOpen(true)}
+                        className="bg-[var(--card-bg-color)] border border-[var(--border-color)] text-white px-6 py-3 rounded-full shadow-2xl hover:bg-blue-500/30 hover:border-blue-400 transition-all duration-300 font-semibold backdrop-filter backdrop-blur-lg"
+                        aria-label="Edit Point Rules"
+                    >
+                        Edit Point Rule
+                    </button>
+                    <button
+                        onClick={handleOpenUpdateLog}
+                        className="bg-[var(--card-bg-color)] border border-[var(--border-color)] text-white px-6 py-3 rounded-full shadow-2xl hover:bg-blue-500/30 hover:border-blue-400 transition-all duration-300 font-semibold backdrop-filter backdrop-blur-lg"
+                        aria-label="View Update Log"
+                    >
+                        Update Log
+                    </button>
+                     <Tooltip text="View on GitHub">
+                        <a
+                            href="https://github.com/DEX-1101/CZN-Save-Data-Tracker"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="bg-[var(--card-bg-color)] border border-[var(--border-color)] text-white p-3 rounded-full shadow-2xl hover:bg-blue-500/30 hover:border-blue-400 transition-all duration-300 backdrop-filter backdrop-blur-lg flex items-center justify-center"
+                            aria-label="View source code on GitHub"
+                        >
+                            <GithubIcon />
+                        </a>
+                    </Tooltip>
+                </div>
             </footer>
 
             {isSettingsOpen && (
@@ -528,6 +654,16 @@ const App: React.FC = () => {
                         setShowRemoveConfirm(false);
                     }}
                     onCancel={() => setShowRemoveConfirm(false)}
+                />
+            )}
+
+            {isUpdateLogOpen && (
+                <UpdateLogModal 
+                    onClose={() => setIsUpdateLogOpen(false)} 
+                    logContent={logContent}
+                    isLoading={isLogLoading}
+                    error={logError}
+                    onRefresh={fetchLog}
                 />
             )}
         </div>
