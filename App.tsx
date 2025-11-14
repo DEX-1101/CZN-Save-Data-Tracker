@@ -7,7 +7,7 @@ type Rules = typeof DEFAULT_POINTS;
 
 // Helper component for tooltips
 interface TooltipProps {
-  text: string;
+  text: React.ReactNode;
   children: React.ReactNode;
 }
 
@@ -15,7 +15,7 @@ const Tooltip: React.FC<TooltipProps> = ({ text, children }) => {
   return (
     <div className="relative flex items-center group">
       {children}
-      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs p-2 text-xs text-white bg-black/80 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 invisible group-hover:visible z-10 pointer-events-none">
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs p-2 text-xs text-white bg-black/80 rounded-md shadow-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 invisible group-hover:visible group-focus-within:visible z-10 pointer-events-none">
         {text}
       </div>
     </div>
@@ -29,7 +29,7 @@ interface NumberInputProps {
   label: React.ReactNode; // Label can now be a React node (e.g., for multi-line)
   value: number;
   onValueChange: (newValue: number) => void;
-  tooltipText?: string;
+  tooltipText?: React.ReactNode;
   ariaLabel?: string; // Explicit aria-label for screen readers if label is complex
 }
 
@@ -61,15 +61,22 @@ const NumberInput: React.FC<NumberInputProps> = ({ id, label, value, onValueChan
 
   const finalAriaLabel = ariaLabel || (typeof label === 'string' ? label : id);
 
-  const labelElement = (
-      <label htmlFor={id} className={`text-slate-300 text-sm leading-tight text-left ${tooltipText ? 'cursor-help' : ''}`}>{label}</label>
-  );
-
   return (
-    <div className="flex items-center justify-between gap-3 h-12">
-      {tooltipText ? <Tooltip text={tooltipText}>{labelElement}</Tooltip> : labelElement}
-      <div className={`flex items-center flex-shrink-0 bg-[var(--input-bg)] rounded-lg border ${value > 0 ? 'border-[var(--accent-color)]' : 'border-transparent'} focus-within:border-[var(--accent-color)] focus-within:ring-2 focus-within:ring-[var(--accent-color)]/50 transition-all duration-300`}>
-        <button onClick={() => adjustValue(-1)} className="h-10 w-8 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 rounded-l-lg transition-colors" aria-label={`Decrease ${finalAriaLabel}`}>
+    <div className="grid grid-cols-[1fr_auto] items-center gap-4 h-12">
+       <div className="flex items-center gap-1.5">
+            <label htmlFor={id} className="text-slate-300 text-sm leading-tight text-left">
+              {label}
+            </label>
+            {tooltipText && (
+              <Tooltip text={tooltipText}>
+                <button type="button" className="text-slate-500 hover:text-white transition-colors duration-200 cursor-help rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--card-bg-color)] focus:ring-[var(--accent-color)]" aria-label={`Help for ${finalAriaLabel}`}>
+                  <QuestionIcon />
+                </button>
+              </Tooltip>
+            )}
+        </div>
+      <div className={`flex items-center flex-shrink-0 bg-[var(--input-bg)] rounded-lg border ${value > 0 ? 'border-[var(--accent-color)]' : 'border-transparent'} focus-within:border-[var(--accent-color)] focus-within:ring-1 focus-within:ring-[var(--accent-color)]/50 transition-all duration-300`}>
+        <button onClick={() => adjustValue(-1)} className="h-10 w-9 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 rounded-l-lg transition-colors" aria-label={`Decrease ${finalAriaLabel}`}>
           <ChevronDown />
         </button>
         <input
@@ -80,7 +87,7 @@ const NumberInput: React.FC<NumberInputProps> = ({ id, label, value, onValueChan
           min="0"
           className="w-16 bg-transparent text-white p-2 text-center focus:outline-none"
         />
-        <button onClick={() => adjustValue(1)} className="h-10 w-8 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 rounded-r-lg transition-colors" aria-label={`Increase ${finalAriaLabel}`}>
+        <button onClick={() => adjustValue(1)} className="h-10 w-9 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 rounded-r-lg transition-colors" aria-label={`Increase ${finalAriaLabel}`}>
           <ChevronUp />
         </button>
       </div>
@@ -135,9 +142,15 @@ const GithubIcon = () => (
 );
 
 const QuestionIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+        <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286m1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94"/>
+    </svg>
+);
+
+const RulesIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-        <path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/>
+        <path d="M1 2.828c.885-.37 2.154-.769 3.388-.893 1.33-.134 2.458.063 3.112.752v9.746c-.935-.53-2.12-.603-3.213-.493-1.18.12-2.37.461-3.287.811V2.828zm7.5-.141c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.823c-.908-.348-2.108-.733-3.287-.81-1.094-.08-2.28.06-3.213.492V2.687zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.347-.82 3.824-.918 1.477-.098 2.835.176 3.714.715a.5.5 0 0 0 .293 0c.879-.54 2.237-.813 3.714-.715 1.477.098 2.942.518 3.824.918a.5.5 0 0 0 .707-.455v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783z"/>
     </svg>
 );
 
@@ -166,7 +179,7 @@ const CalculatorInstance: React.FC<CalculatorInstanceProps> = ({ instanceIndex, 
     const progress = tierLimit > 0 ? Math.min((totalPoints / tierLimit) * 100, 100) : 0;
 
     return (
-        <div className="card-container w-full max-w-xl rounded-2xl shadow-2xl p-6 flex flex-col gap-4 transition-all duration-300 md:hover:scale-[1.02] md:hover:shadow-[0_0_30px_rgba(0,120,212,0.2)] fade-in">
+        <div className="card-container w-full max-w-2xl rounded-2xl shadow-2xl p-6 flex flex-col gap-4 transition-all duration-300 md:hover:scale-[1.02] md:hover:shadow-[0_0_30px_rgba(0,120,212,0.2)] fade-in">
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                 <input
                     type="text"
@@ -239,19 +252,23 @@ const CalculatorInstance: React.FC<CalculatorInstanceProps> = ({ instanceIndex, 
                         <h3 className="text-slate-400 font-semibold text-xs uppercase tracking-wider">COMBATAN CARD</h3>
                         <div className="mt-1.5 h-[2px] w-full bg-[var(--accent-color)] rounded"></div>
                     </div>
-                    <NumberInput id={`neutral-card-${instanceIndex}`} label="Neutral Card" value={values.neutralCard} onValueChange={(v) => onValueChange('neutralCard', v)} tooltipText={`${rules.NEUTRAL_CARD} points per card`} />
-                    <NumberInput id={`monster-card-${instanceIndex}`} label="Monster Card" value={values.monsterCard} onValueChange={(v) => onValueChange('monsterCard', v)} tooltipText={`${rules.MONSTER_CARD} points per card`} />
-                    <NumberInput id={`card-conversion-${instanceIndex}`} label="Card Conversion" value={values.cardConversion} onValueChange={(v) => onValueChange('cardConversion', v)} tooltipText={`${rules.CARD_CONVERSION} points per card`} />
+                    <NumberInput id={`neutral-card-${instanceIndex}`} label="Neutral Card" value={values.neutralCard} onValueChange={(v) => onValueChange('neutralCard', v)} tooltipText={<>{`${rules.NEUTRAL_CARD} points per card.`}<br/><br/>A general card that can be found in the shop or from events. Check the in-game card gallery if you're not sure.</>} />
+                    <NumberInput id={`monster-card-${instanceIndex}`} label="Monster Card" value={values.monsterCard} onValueChange={(v) => onValueChange('monsterCard', v)} tooltipText={<>{`${rules.MONSTER_CARD} points per card.`}<br/><br/>Card obtained by defeating an <strong>Elite Boss</strong>.</>} />
+                    <NumberInput id={`card-conversion-${instanceIndex}`} label="Card Conversion" value={values.cardConversion} onValueChange={(v) => onValueChange('cardConversion', v)} tooltipText={<>{`${rules.CARD_CONVERSION} points per card.`}<br/><br/>Any of your combatant cards can be converted into a <strong>Neutral Card</strong> in a specific rare event. If you convert to a card that has a <strong>[Remove]</strong> tag, the conversion cost is ignored, so do not input a value here.</>} />
                     <NumberInput 
                         id={`normal-epiphany-${instanceIndex}`} 
                         label={<>Neutral/Monster<br/>Epiphany</>}
                         ariaLabel="Neutral Monster Epiphany"
                         value={values.normalEpiphany} 
                         onValueChange={(v) => onValueChange('normalEpiphany', v)} 
-                        tooltipText={`${rules.NORMAL_EPIPHANY} points per card. Applies to both Neutral and Monster cards.`} 
+                        tooltipText={<>
+                            {`${rules.NORMAL_EPIPHANY} points per card.`}<br/><br/>
+                            A <strong>Neutral Card</strong> or <strong>Monster Card</strong> that has an <strong>Epiphany</strong> upgrade.<br/><br/>
+                            <strong>Note:</strong> <strong>Normal Epiphany</strong> and <strong>Divine Epiphany</strong> on Neutral/Monster Card are counted separately. If a Neutral/Monster Card has a Divine Epiphany, you must add +1 here AND +1 in the Divine Epiphany section.
+                        </>} 
                     />
-                    <NumberInput id={`divine-epiphany-${instanceIndex}`} label="Divine Epiphany" value={values.divineEpiphany} onValueChange={(v) => onValueChange('divineEpiphany', v)} tooltipText={`${rules.DIVINE_EPIPHANY} points per card`} />
-                    <NumberInput id={`forbidden-card-${instanceIndex}`} label="Forbidden Card" value={values.forbiddenCard} onValueChange={(v) => onValueChange('forbiddenCard', v)} tooltipText={`${rules.FORBIDDEN_CARD} points per card`} />
+                    <NumberInput id={`divine-epiphany-${instanceIndex}`} label="Divine Epiphany" value={values.divineEpiphany} onValueChange={(v) => onValueChange('divineEpiphany', v)} tooltipText={<>{`${rules.DIVINE_EPIPHANY} points per card.`}<br/><br/>Any <strong>Divine Epiphany</strong> upgrade on <strong>All Cards</strong> in your deck is counted here.</>} />
+                    <NumberInput id={`forbidden-card-${instanceIndex}`} label="Forbidden Card" value={values.forbiddenCard} onValueChange={(v) => onValueChange('forbiddenCard', v)} tooltipText={<>{`${rules.FORBIDDEN_CARD} points per card.`}<br/><br/>A card obtained from a <strong>chaos event</strong>. These cards will always be saved, based on the in-game description.</>} />
                 </div>
                 
                 <div className="flex flex-col gap-3 flex-1 min-w-0">
@@ -259,9 +276,9 @@ const CalculatorInstance: React.FC<CalculatorInstanceProps> = ({ instanceIndex, 
                         <h3 className="text-slate-400 font-semibold text-xs uppercase tracking-wider">CARD REMOVAL/DUPLICATED</h3>
                         <div className="mt-1.5 h-[2px] w-full bg-[var(--accent-color)] rounded"></div>
                     </div>
-                    <NumberInput id={`character-card-${instanceIndex}`} label="Character Card" value={values.characterCard} onValueChange={(v) => onValueChange('characterCard', v)} tooltipText={`${rules.CHARACTER_CARD} points per card`} />
-                    <NumberInput id={`card-removed-${instanceIndex}`} label="Card Removed" value={values.cardRemoved} onValueChange={(v) => onValueChange('cardRemoved', v)} tooltipText="Points scale: 1=0, 2=10, 3=40, 4=90..." />
-                    <NumberInput id={`card-duplication-${instanceIndex}`} label="Card Duplication" value={values.cardDuplication} onValueChange={(v) => onValueChange('cardDuplication', v)} tooltipText="Same scaling as Card Removed: 1=0, 2=10, 3=40..." />
+                    <NumberInput id={`character-card-${instanceIndex}`} label="Character Card" value={values.characterCard} onValueChange={(v) => onValueChange('characterCard', v)} tooltipText={<>{`${rules.CHARACTER_CARD} points per card.`}<br/><br/>When you remove a card, if that card is one of your own <strong>Character/Combatant Cards</strong>, add +1 to this section.</>} />
+                    <NumberInput id={`card-removed-${instanceIndex}`} label="Card Removed" value={values.cardRemoved} onValueChange={(v) => onValueChange('cardRemoved', v)} tooltipText={<>{`Points scale: 1=0, 2=10, 3=40...`}<br/><br/>Any card you remove is counted, including <strong>Neutral</strong>, <strong>Monster</strong>, <strong>Forbidden</strong>, or your own <strong>Character Card</strong>.</>} />
+                    <NumberInput id={`card-duplication-${instanceIndex}`} label="Card Duplication" value={values.cardDuplication} onValueChange={(v) => onValueChange('cardDuplication', v)} tooltipText={<>{`Same scaling as Card Removed: 1=0, 2=10, 3=40...`}<br/><br/>Any card you duplicate is counted here.</>} />
                 </div>
             </div>
             
@@ -280,9 +297,15 @@ const CalculatorInstance: React.FC<CalculatorInstanceProps> = ({ instanceIndex, 
                     {isWithinLimit ? 'OK' : 'Save Data Limit Exceeds'}
                 </div>
                 {!isWithinLimit && (
-                    <div className="flex items-center justify-center gap-2 text-red-300 text-xs fade-in">
-                        <WarningIcon />
-                        <span>Your deck might not be fully saved</span>
+                    <div className="flex flex-col items-center justify-center gap-1 mt-1 fade-in">
+                         <div className="flex items-center gap-2 text-yellow-300 text-xs">
+                            <WarningIcon />
+                            <span>You are {totalPoints - tierLimit} points over the limit.</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-red-300 text-xs">
+                            <WarningIcon />
+                            <span>Your deck might not be fully saved</span>
+                        </div>
                     </div>
                 )}
             </div>
@@ -298,7 +321,7 @@ interface SettingsModalProps {
 }
 
 const RuleInput: React.FC<{ label: string; value: number; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; }> = ({ label, value, onChange }) => (
-    <div className="flex justify-between items-center py-2 border-b border-slate-700/50">
+    <div className="grid grid-cols-[1fr_auto] items-center py-2 border-b border-slate-700/50 gap-4">
         <label className="text-slate-300">{label}</label>
         <input
             type="number"
@@ -582,7 +605,7 @@ const App: React.FC = () => {
                 </p>
             </header>
 
-            <div className="w-full flex justify-center py-6">
+            <div className="w-full flex flex-col sm:flex-row items-center justify-center gap-4 py-6 px-4">
                 <a
                     href="https://raw.githubusercontent.com/DEX-1101/CZN-Save-Data-Tracker/refs/heads/main/exx.jpg"
                     target="_blank"
@@ -592,6 +615,16 @@ const App: React.FC = () => {
                 >
                     <QuestionIcon />
                     <span>How To Use</span>
+                </a>
+                <a
+                    href="https://docs.google.com/spreadsheets/d/1diExmbtbyTGMmB_-RfQvn0in-DM-gPjQu14XjviIJ0Y/edit?gid=1278070975#gid=1278070975"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 bg-[var(--card-bg-color)] border border-[var(--border-color)] text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-500/30 hover:border-blue-400 transition-all duration-300 font-semibold backdrop-filter backdrop-blur-lg"
+                    aria-label="Read the RULES here"
+                >
+                    <RulesIcon />
+                    <span>Read the RULES here</span>
                 </a>
             </div>
 
@@ -629,7 +662,7 @@ const App: React.FC = () => {
                     >
                         Update Log
                     </button>
-                     <Tooltip text="View on GitHub">
+                     <Tooltip text="Feel free to create an issue if something wrong/missing">
                         <a
                             href="https://github.com/DEX-1101/CZN-Save-Data-Tracker"
                             target="_blank"
