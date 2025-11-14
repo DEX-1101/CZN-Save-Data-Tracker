@@ -1,3 +1,11 @@
-13 November 2025
+NOTE: Currently, there is an issue when calculating a natural card that has divine epiphany, you might expect more points added, eg. +10 points more Faint Memory.
+
+14/11/2025
+- Add a RULE on how point/save data is calculated.
+- Add a tooltip button and description for better understanding.
+- Add a Guide Image on How to Use the Tools.
+- Add a point overflow value if reaching the save data limit.
+
+13/11/2025
 - Initial Released
-- Currently, there is an issue when calculating a natural card that has divine epiphany, you might expect more points added, eg. +10 points more Faint Memory.
+
