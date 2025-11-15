@@ -291,7 +291,7 @@ const CalculatorInstance: React.FC<CalculatorInstanceProps> = ({ instanceIndex, 
                 </div>
                 <div className="flex justify-between text-slate-300 text-sm">
                     <span>Faint Memory: <span className="font-bold text-white">{totalPoints} Points</span></span>
-                    <span>Limit: <span className="font-bold text-white">{tierLimit}</span></span>
+                    <span>Save Data Limit: <span className="font-bold text-white">{tierLimit}</span></span>
                 </div>
                 <div className={`text-center font-bold text-lg p-2.5 rounded-lg transition-all duration-300 ${isWithinLimit ? 'text-green-300 bg-green-500/10' : 'text-red-300 bg-red-500/10'}`}>
                     {isWithinLimit ? 'OK' : 'Save Data Limit Exceeds'}
