@@ -5,23 +5,187 @@ import { DEFAULT_POINTS, calculateSpecialPoints, calculateTierLimit, TIER_OPTION
 
 type Rules = typeof DEFAULT_POINTS;
 
+const translations = {
+  en: {
+    app: {
+      description: 'A tool to calculate and track your Faint Memory points to control which card you want to keep in your deck. Enter your card counts for the Combatant to see if you are hitting the save data limit or not. Tools based on this ',
+      redditLinkText: 'reddit post',
+      howToUse: 'How To Use',
+      readRules: 'Read the RULES here',
+      editRule: 'Edit Point Rule',
+      updateLog: 'Update Log',
+      githubTooltip: 'Feel free to create an issue if something wrong/missing',
+    },
+    calculator: {
+      placeholder: 'Combatant Name',
+      resetTooltip: 'Reset Fields',
+      removeTooltip: 'Remove Combatant',
+      addTooltip: 'Add Combatant',
+      limitExceeded: 'Save Data Limit Exceeds',
+      deckNotSavedWarning: 'Your deck might not be fully saved',
+      statusOk: 'OK',
+      tierPrefix: 'Tier',
+      faintMemory: 'Faint Memory:',
+      pointsSuffix: 'Points',
+      saveDataLimit: 'Save Data Limit:',
+      totalPrefix: 'Total:',
+      saveDataTier: 'Save Data Tier:',
+      pointOverflow: (points: number) => `${points} point overflow`,
+      tooltips: {
+        neutralCard: (points: number) => <>{`${points} points per card.`}<br/><br/>A general card that can be found in the shop or from events. Check the in-game card gallery if you're not sure.</>,
+        monsterCard: (points: number) => <>{`${points} points per card.`}<br/><br/>Card obtained by defeating an <strong>Elite Boss</strong>.</>,
+        cardConversion: (points: number) => <>{`${points} points per card.`}<br/><br/>Any of your combatant cards can be converted into a <strong>Neutral Card</strong> in a specific rare event. If you convert to a card that has a <strong>[Remove]</strong> tag, the conversion cost is ignored, so do not input a value here.</>,
+        normalEpiphany: (points: number) => <>
+            {`${points} points per card.`}<br/><br/>
+            A <strong>Neutral Card</strong> or <strong>Monster Card</strong> that has an <strong>Epiphany</strong> upgrade.<br/><br/>
+            <strong>Note:</strong> <strong>Normal Epiphany</strong> and <strong>Divine Epiphany</strong> on Neutral/Monster Card are counted separately. If a Neutral/Monster Card has a Divine Epiphany, you must add +1 here AND +1 in the Divine Epiphany section.
+        </>,
+        divineEpiphany: (points: number) => <>{`${points} points per card.`}<br/><br/>Any <strong>Divine Epiphany</strong> upgrade on <strong>All Cards</strong> in your deck.</>,
+        forbiddenCard: (points: number) => <>{`${points} points per card.`}<br/><br/>A card obtained from a <strong>chaos event</strong>. These cards will always be saved, based on the in-game description.</>,
+        characterCard: (points: number) => <>{`${points} points per card.`}<br/><br/>When you remove a card, if that card is one of your own <strong>Character/Combatant Cards</strong>, add +1 to this section.</>,
+        cardRemoved: <>{`Points scale: 1=0, 2=10, 3=40...`}<br/><br/>Any card you removed, including <strong>Neutral</strong>, <strong>Monster</strong>, <strong>Forbidden</strong>, or your own <strong>Character Card</strong>.</>,
+        cardDuplication: <>{`Points scale: 1=0, 2=10, 3=40...`}<br/><br/>Any card you duplicate or have <strong>[Replicate]</strong> tag on it.</>,
+      },
+    },
+    settings: {
+      title: 'Edit Point Rules',
+      close: 'Close settings',
+      cardPointsHeader: 'Card Points',
+      scalingHeader: 'CARD REMOVAL/DUPLICATE SCALING',
+      scalingDesc1: "This defines how points are calculated for 'Card Removed' and 'Card Duplication'. The first card of each type is always 0 points.",
+      scalingInitial: 'Initial Increment:',
+      scalingInitialDesc: 'Sets the points awarded for the second card.',
+      scalingStep: 'Increment Step:',
+      scalingStepDesc: 'The amount the point reward increases for each card after the second one.',
+      example: 'Example with default values (10 / 20):',
+      reset: 'Reset to Default',
+      done: 'Done',
+    },
+    confirmation: {
+      title: 'Remove Combatant?',
+      message: 'This combatant has modified data. Are you sure you want to remove it? This action cannot be undone.',
+      cancel: 'Cancel',
+      remove: 'Remove',
+    },
+    updateLog: {
+      title: 'Update Log',
+      refresh: 'Refresh Log',
+      close: 'Close update log',
+      failed: 'Failed to Load Updates',
+      tryAgain: 'Try Again',
+      done: 'Done',
+    },
+  },
+  id: {
+    app: {
+      description: 'Alat untuk menghitung dan melacak poin Faint Memory untuk mengontrol kartu mana yang ingin disimpan di deck. Masukkan jumlah kartu untuk Combatant untuk melihat apakah mencapai batas save data atau tidak. Alat ini berdasarkan ',
+      redditLinkText: 'postingan reddit',
+      howToUse: 'Cara Menggunakan',
+      readRules: 'Baca Aturan di Sini',
+      editRule: 'Edit Point Rule',
+      updateLog: 'Update Log',
+      githubTooltip: 'Jangan ragu untuk membuat issue di github jika ada yang salah/aneh',
+    },
+    calculator: {
+      placeholder: 'Nama Combatant',
+      resetTooltip: 'Reset Isian',
+      removeTooltip: 'Hapus Combatant',
+      addTooltip: 'Tambah Combatant',
+      limitExceeded: 'Batas Save Data Terlampaui',
+      deckNotSavedWarning: 'Deck mungkin tidak tersimpan sepenuhnya',
+      statusOk: 'OK',
+      tierPrefix: 'Tier',
+      faintMemory: 'Faint Memory:',
+      pointsSuffix: 'Poin',
+      saveDataLimit: 'Batas Save Data:',
+      totalPrefix: 'Total:',
+      saveDataTier: 'Save Data Tier:',
+      pointOverflow: (points: number) => `${points} poin berlebih`,
+      tooltips: {
+        neutralCard: (points: number) => <>{`${points} poin per kartu.`}<br/><br/>Kartu umum yang bisa ditemukan di toko atau dari event. Periksa galeri kartu di dalam game jika tidak yakin.</>,
+        monsterCard: (points: number) => <>{`${points} poin per kartu.`}<br/><br/>Kartu yang didapat dengan mengalahkan <strong>Elite Boss</strong>.</>,
+        cardConversion: (points: number) => <>{`${points} poin per kartu.`}<br/><br/>Setiap kartu combatant dapat diubah menjadi <strong>Neutral Card</strong> di event langka tertentu. Jika diubah menjadi kartu yang memiliki tag <strong>[Remove]</strong>, biaya konversi diabaikan, jadi jangan masukkan nilai di sini.</>,
+        normalEpiphany: (points: number) => <>
+            {`${points} poin per kartu.`}<br/><br/>
+            Sebuah <strong>Neutral Card</strong> atau <strong>Monster Card</strong> yang memiliki upgrade <strong>Epiphany</strong>.<br/><br/>
+            <strong>Catatan:</strong> <strong>Normal Epiphany</strong> dan <strong>Divine Epiphany</strong> pada Neutral/Monster Card dihitung secara terpisah. Jika Neutral/Monster Card memiliki Divine Epiphany, harus ditambahkan +1 di sini DAN +1 di bagian Divine Epiphany.
+        </>,
+        divineEpiphany: (points: number) => <>{`${points} poin per kartu.`}<br/><br/>Setiap upgrade <strong>Divine Epiphany</strong> pada <strong>Semua Kartu</strong> di dalam deck.</>,
+        forbiddenCard: (points: number) => <>{`${points} poin per kartu.`}<br/><br/>Kartu yang didapat dari <strong>chaos event</strong>. Kartu-kartu ini akan selalu tersimpan, berdasarkan deskripsi di dalam game.</>,
+        characterCard: (points: number) => <>{`${points} poin per kartu.`}<br/><br/>Saat menghapus kartu, jika kartu tersebut adalah salah satu dari <strong>Character/Combatant Cards</strong> milik sendiri, tambahkan +1 ke bagian ini.</>,
+        cardRemoved: <>{`Skala poin: 1=0, 2=10, 3=40...`}<br/><br/>Setiap kartu yang dihapus akan dihitung, termasuk <strong>Neutral</strong>, <strong>Monster</strong>, <strong>Forbidden</strong>, atau <strong>Character Card</strong> milik sendiri.</>,
+        cardDuplication: <>{`Skala poin: 1=0, 2=10, 3=40...`}<br/><br/>Setiap kartu yang diduplikasi atau kartu yang ada tag <strong>[Replicate]</strong>.</>,
+      },
+    },
+    settings: {
+      title: 'Edit Aturan Poin',
+      close: 'Tutup pengaturan',
+      cardPointsHeader: 'Poin Kartu',
+      scalingHeader: 'SKALA PENGHAPUSAN/DUPLIKASI KARTU',
+      scalingDesc1: "Ini menentukan bagaimana poin dihitung untuk 'Kartu Dihapus' dan 'Duplikasi Kartu'. Kartu pertama dari setiap jenis selalu 0 poin.",
+      scalingInitial: 'Kenaikan Awal:',
+      scalingInitialDesc: 'Menetapkan poin yang diberikan untuk kartu kedua.',
+      scalingStep: 'Langkah Kenaikan:',
+      scalingStepDesc: 'Jumlah kenaikan hadiah poin untuk setiap kartu setelah kartu kedua.',
+      example: 'Contoh dengan nilai default (10 / 20):',
+      reset: 'Reset ke Default',
+      done: 'Selesai',
+    },
+    confirmation: {
+      title: 'Hapus Combatant?',
+      message: 'Combatant ini memiliki data yang telah diubah. Apakah Anda yakin ingin menghapusnya? Tindakan ini tidak dapat dibatalkan.',
+      cancel: 'Batal',
+      remove: 'Hapus',
+    },
+    updateLog: {
+      title: 'Log Pembaruan',
+      refresh: 'Segarkan Log',
+      close: 'Tutup log pembaruan',
+      failed: 'Gagal Memuat Pembaruan',
+      tryAgain: 'Coba Lagi',
+      done: 'Selesai',
+    },
+  },
+};
+
+type Language = keyof typeof translations;
+type TranslationSet = typeof translations.en;
+
 // Helper component for tooltips
 interface TooltipProps {
   text: React.ReactNode;
   children: React.ReactNode;
+  align?: 'center' | 'left' | 'right';
 }
 
-const Tooltip: React.FC<TooltipProps> = ({ text, children }) => {
+const Tooltip: React.FC<TooltipProps> = ({ text, children, align = 'center' }) => {
+  const positionClasses = {
+    center: 'left-1/2 -translate-x-1/2',
+    left: 'left-0',
+    right: 'right-0',
+  };
+  
   return (
     <div className="relative flex items-center group">
       {children}
-      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max max-w-xs p-2 text-xs text-white bg-black/80 rounded-md shadow-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 invisible group-hover:visible group-focus-within:visible z-10 pointer-events-none">
+      <div className={`absolute bottom-full ${positionClasses[align]} mb-2 w-max max-w-[90vw] sm:max-w-xs p-2 text-xs text-white bg-black/80 rounded-md shadow-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 invisible group-hover:visible group-focus-within:visible z-10 pointer-events-none`}>
         {text}
       </div>
     </div>
   );
 };
 
+const ChevronUp = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+      <path fillRule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708z"/>
+    </svg>
+);
+  
+const ChevronDown = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+      <path fillRule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/>
+    </svg>
+);
 
 // Helper component for number inputs with steppers
 interface NumberInputProps {
@@ -31,9 +195,10 @@ interface NumberInputProps {
   onValueChange: (newValue: number) => void;
   tooltipText?: React.ReactNode;
   ariaLabel?: string; // Explicit aria-label for screen readers if label is complex
+  isOverLimit: boolean;
 }
 
-const NumberInput: React.FC<NumberInputProps> = ({ id, label, value, onValueChange, tooltipText, ariaLabel }) => {
+const NumberInput: React.FC<NumberInputProps> = ({ id, label, value, onValueChange, tooltipText, ariaLabel, isOverLimit }) => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const numValue = parseInt(e.target.value, 10);
     if (!isNaN(numValue) && numValue >= 0) {
@@ -47,35 +212,27 @@ const NumberInput: React.FC<NumberInputProps> = ({ id, label, value, onValueChan
     onValueChange(Math.max(0, value + amount));
   };
   
-  const ChevronUp = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
-      <path fillRule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708z"/>
-    </svg>
-  );
-  
-  const ChevronDown = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
-      <path fillRule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/>
-    </svg>
-  );
-
   const finalAriaLabel = ariaLabel || (typeof label === 'string' ? label : id);
 
   return (
     <div className="grid grid-cols-[1fr_auto] items-center gap-4 h-12">
        <div className="flex items-center gap-1.5">
-            <label htmlFor={id} className="text-slate-300 text-sm leading-tight text-left">
-              {label}
-            </label>
             {tooltipText && (
-              <Tooltip text={tooltipText}>
+              <Tooltip text={tooltipText} align="left">
                 <button type="button" className="text-slate-500 hover:text-white transition-colors duration-200 cursor-help rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--card-bg-color)] focus:ring-[var(--accent-color)]" aria-label={`Help for ${finalAriaLabel}`}>
                   <QuestionIcon />
                 </button>
               </Tooltip>
             )}
+            <label htmlFor={id} className="text-slate-300 text-sm leading-tight text-left">
+              {label}
+            </label>
         </div>
-      <div className={`flex items-center flex-shrink-0 bg-[var(--input-bg)] rounded-lg border ${value > 0 ? 'border-[var(--accent-color)]' : 'border-transparent'} focus-within:border-[var(--accent-color)] focus-within:ring-1 focus-within:ring-[var(--accent-color)]/50 transition-all duration-300`}>
+      <div className={`flex items-center flex-shrink-0 bg-[var(--input-bg)] rounded-lg border transition-all duration-300 focus-within:ring-1 ${
+          isOverLimit && value > 0
+            ? 'border-red-500 focus-within:border-red-500 focus-within:ring-red-500/50'
+            : `focus-within:border-[var(--accent-color)] focus-within:ring-[var(--accent-color)]/50 ${value > 0 ? 'border-[var(--accent-color)]' : 'border-slate-700/50'}`
+        }`}>
         <button onClick={() => adjustValue(-1)} className="h-10 w-9 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 rounded-l-lg transition-colors" aria-label={`Decrease ${finalAriaLabel}`}>
           <ChevronDown />
         </button>
@@ -108,6 +265,7 @@ interface CalculatorInstanceProps {
     onRemove: () => void;
     canAdd: boolean;
     canRemove: boolean;
+    t: TranslationSet;
 }
 
 const ResetIcon = () => (
@@ -119,7 +277,7 @@ const ResetIcon = () => (
 
 const PlusIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1 -1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
     </svg>
 );
 
@@ -155,20 +313,29 @@ const RulesIcon = () => (
 );
 
 
-const CalculatorInstance: React.FC<CalculatorInstanceProps> = ({ instanceIndex, values, onValueChange, onReset, rules, isLast, onAdd, onRemove, canAdd, canRemove }) => {
+const CalculatorInstance: React.FC<CalculatorInstanceProps> = ({ instanceIndex, values, onValueChange, onReset, rules, isLast, onAdd, onRemove, canAdd, canRemove, t }) => {
+    const combatantCardPoints = useMemo(() => {
+        return (
+            values.neutralCard * rules.NEUTRAL_CARD +
+            values.monsterCard * rules.MONSTER_CARD +
+            values.cardConversion * rules.CARD_CONVERSION +
+            values.normalEpiphany * rules.NORMAL_EPIPHANY +
+            values.divineEpiphany * rules.DIVINE_EPIPHANY +
+            values.forbiddenCard * rules.FORBIDDEN_CARD
+        );
+    }, [values.neutralCard, values.monsterCard, values.cardConversion, values.normalEpiphany, values.divineEpiphany, values.forbiddenCard, rules]);
+
+    const removalDuplicationPoints = useMemo(() => {
+        return (
+            values.characterCard * rules.CHARACTER_CARD +
+            calculateSpecialPoints(values.cardRemoved, rules.SPECIAL_ACTION_INITIAL_INCREMENT, rules.SPECIAL_ACTION_INCREMENT_STEP) +
+            calculateSpecialPoints(values.cardDuplication, rules.SPECIAL_ACTION_INITIAL_INCREMENT, rules.SPECIAL_ACTION_INCREMENT_STEP)
+        );
+    }, [values.characterCard, values.cardRemoved, values.cardDuplication, rules]);
+
     const totalPoints = useMemo(() => {
-        let total = 0;
-        total += values.neutralCard * rules.NEUTRAL_CARD;
-        total += values.monsterCard * rules.MONSTER_CARD;
-        total += values.cardConversion * rules.CARD_CONVERSION;
-        total += values.normalEpiphany * rules.NORMAL_EPIPHANY;
-        total += values.divineEpiphany * rules.DIVINE_EPIPHANY;
-        total += values.forbiddenCard * rules.FORBIDDEN_CARD;
-        total += values.characterCard * rules.CHARACTER_CARD;
-        total += calculateSpecialPoints(values.cardRemoved, rules.SPECIAL_ACTION_INITIAL_INCREMENT, rules.SPECIAL_ACTION_INCREMENT_STEP);
-        total += calculateSpecialPoints(values.cardDuplication, rules.SPECIAL_ACTION_INITIAL_INCREMENT, rules.SPECIAL_ACTION_INCREMENT_STEP);
-        return total;
-    }, [values, rules]);
+        return combatantCardPoints + removalDuplicationPoints;
+    }, [combatantCardPoints, removalDuplicationPoints]);
 
     const tierLimit = useMemo(() => {
         return calculateTierLimit(values.mapTier);
@@ -177,6 +344,13 @@ const CalculatorInstance: React.FC<CalculatorInstanceProps> = ({ instanceIndex, 
     const isWithinLimit = totalPoints <= tierLimit;
     
     const progress = tierLimit > 0 ? Math.min((totalPoints / tierLimit) * 100, 100) : 0;
+    
+    const handleTierChange = (increment: number) => {
+        const newTier = values.mapTier + increment;
+        if (newTier >= TIER_OPTIONS[0] && newTier <= TIER_OPTIONS[TIER_OPTIONS.length - 1]) {
+            onValueChange('mapTier', newTier);
+        }
+    };
 
     return (
         <div className="card-container w-full max-w-2xl rounded-2xl shadow-2xl p-6 flex flex-col gap-4 transition-all duration-300 md:hover:scale-[1.02] md:hover:shadow-[0_0_30px_rgba(0,120,212,0.2)] fade-in">
@@ -186,10 +360,10 @@ const CalculatorInstance: React.FC<CalculatorInstanceProps> = ({ instanceIndex, 
                     value={values.characterName}
                     onChange={(e) => onValueChange('characterName', e.target.value)}
                     className="w-full sm:flex-grow bg-transparent text-white rounded-lg p-3 border-b-2 border-slate-700 focus:outline-none focus:border-[var(--accent-color)] transition duration-300 text-lg font-semibold placeholder-slate-500"
-                    placeholder="Combatant Name"
+                    placeholder={t.calculator.placeholder}
                 />
                 <div className="flex items-center gap-2 self-end sm:self-auto flex-shrink-0">
-                    <Tooltip text="Reset Fields">
+                    <Tooltip text={t.calculator.resetTooltip} align="right">
                         <button
                             onClick={onReset}
                             className="p-3 flex-shrink-0 rounded-lg text-slate-400 hover:text-white bg-[var(--input-bg)] hover:bg-white/10 transition-colors duration-200"
@@ -200,21 +374,21 @@ const CalculatorInstance: React.FC<CalculatorInstanceProps> = ({ instanceIndex, 
                     </Tooltip>
                     {isLast && (
                         <>
-                            <Tooltip text="Remove Combatant">
+                            <Tooltip text={t.calculator.removeTooltip} align="right">
                                 <button
                                     onClick={onRemove}
                                     disabled={!canRemove}
-                                    className="p-3 flex-shrink-0 rounded-lg text-slate-400 bg-[var(--input-bg)] hover:text-white hover:bg-white/10 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="p-3 flex-shrink-0 rounded-lg bg-red-500/10 text-red-300 hover:bg-red-500/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                                     aria-label="Remove last combatant"
                                 >
                                     <MinusIcon />
                                 </button>
                             </Tooltip>
-                            <Tooltip text="Add Combatant">
+                            <Tooltip text={t.calculator.addTooltip} align="right">
                                 <button
                                     onClick={onAdd}
                                     disabled={!canAdd}
-                                    className="p-3 flex-shrink-0 rounded-lg text-slate-400 bg-[var(--input-bg)] hover:text-white hover:bg-white/10 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="p-3 flex-shrink-0 rounded-lg bg-green-500/10 text-green-300 hover:bg-green-500/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                                     aria-label="Add new combatant"
                                 >
                                 <PlusIcon />
@@ -226,59 +400,59 @@ const CalculatorInstance: React.FC<CalculatorInstanceProps> = ({ instanceIndex, 
             </div>
             
             <div className="flex items-center gap-4">
-                <label htmlFor={`map-tier-${values.characterName}`} className="text-slate-300 text-sm font-medium whitespace-nowrap">Save Data Tier:</label>
-                <div className="relative flex-grow">
+                <label htmlFor={`map-tier-${values.characterName}`} className="text-slate-300 text-sm font-medium whitespace-nowrap">{t.calculator.saveDataTier}</label>
+                <div className="flex items-center flex-grow bg-[var(--input-bg)] rounded-lg border border-slate-700 focus-within:border-[var(--accent-color)] focus-within:ring-1 focus-within:ring-[var(--accent-color)]/50 transition-all duration-300">
+                     <button
+                        onClick={() => handleTierChange(-1)}
+                        disabled={values.mapTier <= TIER_OPTIONS[0]}
+                        className="h-10 w-9 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 rounded-l-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        aria-label="Decrease Save Data Tier"
+                    >
+                        <ChevronDown />
+                    </button>
                     <select
                         id={`map-tier-${values.characterName}`}
                         value={values.mapTier}
                         onChange={(e) => onValueChange('mapTier', parseInt(e.target.value, 10))}
-                        className="w-full bg-[var(--input-bg)] text-white rounded-lg border border-slate-700 p-2 focus:outline-none focus:border-[var(--accent-color)] focus:ring-2 focus:ring-[var(--accent-color)]/50 transition appearance-none text-center pr-8"
+                        className="flex-grow bg-transparent text-white py-2 focus:outline-none transition appearance-none text-center cursor-pointer"
                     >
                         {TIER_OPTIONS.map((tier) => (
-                            <option key={tier} value={tier} className="bg-slate-900 text-white">Tier {tier}</option>
+                            <option key={tier} value={tier} className="bg-slate-900 text-white">{t.calculator.tierPrefix} {tier}</option>
                         ))}
                     </select>
-                    <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-slate-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                          <path fillRule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/>
-                        </svg>
-                    </div>
+                     <button
+                        onClick={() => handleTierChange(1)}
+                        disabled={values.mapTier >= TIER_OPTIONS[TIER_OPTIONS.length - 1]}
+                        className="h-10 w-9 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 rounded-r-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        aria-label="Increase Save Data Tier"
+                    >
+                        <ChevronUp />
+                    </button>
                 </div>
             </div>
 
-            <div className="flex flex-col md:flex-row gap-6">
+            <div className="flex flex-col md:flex-row gap-3 md:gap-6">
                 <div className="flex flex-col gap-3 flex-1 min-w-0">
-                    <div>
-                        <h3 className="text-slate-400 font-semibold text-xs uppercase tracking-wider">COMBATAN CARD</h3>
-                        <div className="mt-1.5 h-[2px] w-full bg-[var(--accent-color)] rounded"></div>
-                    </div>
-                    <NumberInput id={`neutral-card-${instanceIndex}`} label="Neutral Card" value={values.neutralCard} onValueChange={(v) => onValueChange('neutralCard', v)} tooltipText={<>{`${rules.NEUTRAL_CARD} points per card.`}<br/><br/>A general card that can be found in the shop or from events. Check the in-game card gallery if you're not sure.</>} />
-                    <NumberInput id={`monster-card-${instanceIndex}`} label="Monster Card" value={values.monsterCard} onValueChange={(v) => onValueChange('monsterCard', v)} tooltipText={<>{`${rules.MONSTER_CARD} points per card.`}<br/><br/>Card obtained by defeating an <strong>Elite Boss</strong>.</>} />
-                    <NumberInput id={`card-conversion-${instanceIndex}`} label="Card Conversion" value={values.cardConversion} onValueChange={(v) => onValueChange('cardConversion', v)} tooltipText={<>{`${rules.CARD_CONVERSION} points per card.`}<br/><br/>Any of your combatant cards can be converted into a <strong>Neutral Card</strong> in a specific rare event. If you convert to a card that has a <strong>[Remove]</strong> tag, the conversion cost is ignored, so do not input a value here.</>} />
+                    <NumberInput isOverLimit={!isWithinLimit} id={`neutral-card-${instanceIndex}`} label="Neutral Card" value={values.neutralCard} onValueChange={(v) => onValueChange('neutralCard', v)} tooltipText={t.calculator.tooltips.neutralCard(rules.NEUTRAL_CARD)} />
+                    <NumberInput isOverLimit={!isWithinLimit} id={`monster-card-${instanceIndex}`} label="Monster Card" value={values.monsterCard} onValueChange={(v) => onValueChange('monsterCard', v)} tooltipText={t.calculator.tooltips.monsterCard(rules.MONSTER_CARD)} />
+                    <NumberInput isOverLimit={!isWithinLimit} id={`card-conversion-${instanceIndex}`} label="Card Conversion" value={values.cardConversion} onValueChange={(v) => onValueChange('cardConversion', v)} tooltipText={t.calculator.tooltips.cardConversion(rules.CARD_CONVERSION)} />
                     <NumberInput 
+                        isOverLimit={!isWithinLimit}
                         id={`normal-epiphany-${instanceIndex}`} 
-                        label={<>Neutral/Monster<br/>Epiphany</>}
+                        label={<>N/M Card<br/>Epiphany</>}
                         ariaLabel="Neutral Monster Epiphany"
                         value={values.normalEpiphany} 
                         onValueChange={(v) => onValueChange('normalEpiphany', v)} 
-                        tooltipText={<>
-                            {`${rules.NORMAL_EPIPHANY} points per card.`}<br/><br/>
-                            A <strong>Neutral Card</strong> or <strong>Monster Card</strong> that has an <strong>Epiphany</strong> upgrade.<br/><br/>
-                            <strong>Note:</strong> <strong>Normal Epiphany</strong> and <strong>Divine Epiphany</strong> on Neutral/Monster Card are counted separately. If a Neutral/Monster Card has a Divine Epiphany, you must add +1 here AND +1 in the Divine Epiphany section.
-                        </>} 
+                        tooltipText={t.calculator.tooltips.normalEpiphany(rules.NORMAL_EPIPHANY)} 
                     />
-                    <NumberInput id={`divine-epiphany-${instanceIndex}`} label="Divine Epiphany" value={values.divineEpiphany} onValueChange={(v) => onValueChange('divineEpiphany', v)} tooltipText={<>{`${rules.DIVINE_EPIPHANY} points per card.`}<br/><br/>Any <strong>Divine Epiphany</strong> upgrade on <strong>All Cards</strong> in your deck is counted here.</>} />
-                    <NumberInput id={`forbidden-card-${instanceIndex}`} label="Forbidden Card" value={values.forbiddenCard} onValueChange={(v) => onValueChange('forbiddenCard', v)} tooltipText={<>{`${rules.FORBIDDEN_CARD} points per card.`}<br/><br/>A card obtained from a <strong>chaos event</strong>. These cards will always be saved, based on the in-game description.</>} />
+                    <NumberInput isOverLimit={!isWithinLimit} id={`divine-epiphany-${instanceIndex}`} label="Divine Epiphany" value={values.divineEpiphany} onValueChange={(v) => onValueChange('divineEpiphany', v)} tooltipText={t.calculator.tooltips.divineEpiphany(rules.DIVINE_EPIPHANY)} />
+                    <NumberInput isOverLimit={!isWithinLimit} id={`forbidden-card-${instanceIndex}`} label="Forbidden Card" value={values.forbiddenCard} onValueChange={(v) => onValueChange('forbiddenCard', v)} tooltipText={t.calculator.tooltips.forbiddenCard(rules.FORBIDDEN_CARD)} />
                 </div>
                 
                 <div className="flex flex-col gap-3 flex-1 min-w-0">
-                    <div>
-                        <h3 className="text-slate-400 font-semibold text-xs uppercase tracking-wider">CARD REMOVAL/DUPLICATED</h3>
-                        <div className="mt-1.5 h-[2px] w-full bg-[var(--accent-color)] rounded"></div>
-                    </div>
-                    <NumberInput id={`character-card-${instanceIndex}`} label="Character Card" value={values.characterCard} onValueChange={(v) => onValueChange('characterCard', v)} tooltipText={<>{`${rules.CHARACTER_CARD} points per card.`}<br/><br/>When you remove a card, if that card is one of your own <strong>Character/Combatant Cards</strong>, add +1 to this section.</>} />
-                    <NumberInput id={`card-removed-${instanceIndex}`} label="Card Removed" value={values.cardRemoved} onValueChange={(v) => onValueChange('cardRemoved', v)} tooltipText={<>{`Points scale: 1=0, 2=10, 3=40...`}<br/><br/>Any card you remove is counted, including <strong>Neutral</strong>, <strong>Monster</strong>, <strong>Forbidden</strong>, or your own <strong>Character Card</strong>.</>} />
-                    <NumberInput id={`card-duplication-${instanceIndex}`} label="Card Duplication" value={values.cardDuplication} onValueChange={(v) => onValueChange('cardDuplication', v)} tooltipText={<>{`Same scaling as Card Removed: 1=0, 2=10, 3=40...`}<br/><br/>Any card you duplicate is counted here.</>} />
+                    <NumberInput isOverLimit={!isWithinLimit} id={`character-card-${instanceIndex}`} label="Character Card" value={values.characterCard} onValueChange={(v) => onValueChange('characterCard', v)} tooltipText={t.calculator.tooltips.characterCard(rules.CHARACTER_CARD)} />
+                    <NumberInput isOverLimit={!isWithinLimit} id={`card-removed-${instanceIndex}`} label="Card Removed" value={values.cardRemoved} onValueChange={(v) => onValueChange('cardRemoved', v)} tooltipText={t.calculator.tooltips.cardRemoved} />
+                    <NumberInput isOverLimit={!isWithinLimit} id={`card-duplication-${instanceIndex}`} label="Card Duplication" value={values.cardDuplication} onValueChange={(v) => onValueChange('cardDuplication', v)} tooltipText={t.calculator.tooltips.cardDuplication} />
                 </div>
             </div>
             
@@ -290,22 +464,35 @@ const CalculatorInstance: React.FC<CalculatorInstanceProps> = ({ instanceIndex, 
                     </div>
                 </div>
                 <div className="flex justify-between text-slate-300 text-sm">
-                    <span>Faint Memory: <span className="font-bold text-white">{totalPoints} Points</span></span>
-                    <span>Save Data Limit: <span className="font-bold text-white">{tierLimit}</span></span>
+                    <span>
+                        {t.calculator.faintMemory} <span className={`font-bold transition-colors duration-300 ${isWithinLimit ? 'text-green-300' : 'text-red-300'}`}>
+                            {totalPoints} {t.calculator.pointsSuffix}
+                        </span>
+                    </span>
+                    <span>{t.calculator.saveDataLimit} <span className="font-bold text-white">{tierLimit}</span></span>
                 </div>
-                <div className={`text-center font-bold text-lg p-2.5 rounded-lg transition-all duration-300 ${isWithinLimit ? 'text-green-300 bg-green-500/10' : 'text-red-300 bg-red-500/10'}`}>
-                    {isWithinLimit ? 'OK' : 'Save Data Limit Exceeds'}
+                <div className={`text-center font-bold text-lg p-2.5 rounded-lg transition-colors duration-300 ${isWithinLimit ? 'text-green-300 bg-green-500/10' : 'text-red-300 bg-red-500/10'}`}>
+                    <div className="h-7 overflow-hidden" aria-live="polite"> {/* text-lg has line-height: 1.75rem = 28px = h-7 */}
+                        <div 
+                            className={`transition-transform duration-500 ease-in-out ${isWithinLimit ? 'translate-y-0' : '-translate-y-1/2'}`}
+                            style={{ height: '200%' }}
+                        >
+                            <div className="h-1/2 flex items-center justify-center">
+                                <span>{t.calculator.statusOk}</span>
+                            </div>
+                            <div className="h-1/2 flex items-center justify-center">
+                                <span>{t.calculator.limitExceeded}</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 {!isWithinLimit && (
-                    <div className="flex flex-col items-center justify-center gap-1 mt-1 fade-in">
-                         <div className="flex items-center gap-2 text-yellow-300 text-xs">
+                    <div className="flex flex-col items-center justify-center gap-1 text-red-300 text-xs mt-1 fade-in">
+                        <div className="flex items-center gap-2">
                             <WarningIcon />
-                            <span>You are {totalPoints - tierLimit} points over the limit.</span>
+                            <span>{t.calculator.deckNotSavedWarning}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-red-300 text-xs">
-                            <WarningIcon />
-                            <span>Your deck might not be fully saved</span>
-                        </div>
+                        <span className="text-yellow-400 font-normal">{t.calculator.pointOverflow(totalPoints - tierLimit)}</span>
                     </div>
                 )}
             </div>
@@ -318,6 +505,7 @@ interface SettingsModalProps {
     rules: Rules;
     setRules: React.Dispatch<React.SetStateAction<Rules>>;
     onClose: () => void;
+    t: TranslationSet;
 }
 
 const RuleInput: React.FC<{ label: string; value: number; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; }> = ({ label, value, onChange }) => (
@@ -332,7 +520,7 @@ const RuleInput: React.FC<{ label: string; value: number; onChange: (e: React.Ch
     </div>
 );
 
-const SettingsModal: React.FC<SettingsModalProps> = ({ rules, setRules, onClose }) => {
+const SettingsModal: React.FC<SettingsModalProps> = ({ rules, setRules, onClose, t }) => {
     const handleRuleChange = (ruleName: keyof Rules, value: string) => {
         const numValue = parseInt(value, 10);
         if (!isNaN(numValue) && numValue >= 0) {
@@ -365,11 +553,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ rules, setRules, onClose 
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 fade-in">
             <div className="card-container w-full max-w-md rounded-2xl p-4 sm:p-6 flex flex-col gap-4" role="dialog" aria-modal="true" aria-labelledby="settings-title">
                 <div className="flex justify-between items-center">
-                    <h2 id="settings-title" className="text-xl font-bold text-white">Edit Point Rules</h2>
-                    <button onClick={onClose} className="text-slate-400 hover:text-white p-2 text-2xl leading-none" aria-label="Close settings">&times;</button>
+                    <h2 id="settings-title" className="text-xl font-bold text-white">{t.settings.title}</h2>
+                    <button onClick={onClose} className="text-slate-400 hover:text-white p-2 text-2xl leading-none" aria-label={t.settings.close}>&times;</button>
                 </div>
                 <div className="flex flex-col gap-2 max-h-[75vh] sm:max-h-[60vh] overflow-y-auto pr-2">
-                    <h3 className="text-slate-400 font-semibold text-xs uppercase tracking-wider">Card Points</h3>
+                    <h3 className="text-slate-400 font-semibold text-xs uppercase tracking-wider">{t.settings.cardPointsHeader}</h3>
                     {normalRules.map(([key, value]) => (
                         <RuleInput
                             key={key}
@@ -378,15 +566,15 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ rules, setRules, onClose 
                             onChange={(e) => handleRuleChange(key as keyof Rules, e.target.value)}
                         />
                     ))}
-                    <h3 className="text-slate-400 font-semibold text-xs uppercase tracking-wider mt-4">CARD REMOVAL/DUPLICATE SCALING</h3>
+                    <h3 className="text-slate-400 font-semibold text-xs uppercase tracking-wider mt-4">{t.settings.scalingHeader}</h3>
                     <div className="text-xs text-slate-500 mb-2 space-y-2">
-                        <p>This defines how points are calculated for 'Card Removed' and 'Card Duplication'. The first card of each type is always 0 points.</p>
+                        <p>{t.settings.scalingDesc1}</p>
                         <ul className="list-disc list-inside space-y-1 pl-2">
-                            <li><span className="font-semibold text-slate-400">Initial Increment:</span> Sets the points awarded for the <em>second</em> card.</li>
-                            <li><span className="font-semibold text-slate-400">Increment Step:</span> The amount the point reward increases for each card <em>after</em> the second one.</li>
+                            <li><span className="font-semibold text-slate-400">{t.settings.scalingInitial}</span> {t.settings.scalingInitialDesc}</li>
+                            <li><span className="font-semibold text-slate-400">{t.settings.scalingStep}</span> {t.settings.scalingStepDesc}</li>
                         </ul>
                         <div>
-                            <p className="font-semibold text-slate-400">Example with default values (10 / 20):</p>
+                            <p className="font-semibold text-slate-400">{t.settings.example}</p>
                             <div className="pl-4 mt-1 text-slate-500/90 leading-relaxed">
                                 1st card: <span className="font-mono">0</span> pts<br/>
                                 2nd card: <span className="font-mono">10</span> pts<br/>
@@ -405,8 +593,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ rules, setRules, onClose 
                     ))}
                 </div>
                 <div className="flex flex-col sm:flex-row gap-4 mt-4">
-                    <button onClick={handleResetToDefault} className="flex-1 p-3 rounded-lg bg-red-500/20 text-red-300 hover:bg-red-500/40 transition-colors duration-200 font-semibold">Reset to Default</button>
-                    <button onClick={onClose} className="flex-1 p-3 rounded-lg bg-[var(--accent-color)] text-white hover:bg-blue-500 transition-colors duration-200 font-semibold">Done</button>
+                    <button onClick={handleResetToDefault} className="flex-1 p-3 rounded-lg bg-red-500/20 text-red-300 hover:bg-red-500/40 transition-colors duration-200 font-semibold">{t.settings.reset}</button>
+                    <button onClick={onClose} className="flex-1 p-3 rounded-lg bg-[var(--accent-color)] text-white hover:bg-blue-500 transition-colors duration-200 font-semibold">{t.settings.done}</button>
                 </div>
             </div>
         </div>
@@ -417,19 +605,20 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ rules, setRules, onClose 
 interface ConfirmationModalProps {
     onConfirm: () => void;
     onCancel: () => void;
+    t: TranslationSet;
 }
 
-const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ onConfirm, onCancel }) => {
+const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ onConfirm, onCancel, t }) => {
     return (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 fade-in">
             <div className="card-container w-full max-w-sm rounded-2xl p-6 flex flex-col gap-4 text-center" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title">
-                <h2 id="confirm-title" className="text-xl font-bold text-white">Remove Combatant?</h2>
+                <h2 id="confirm-title" className="text-xl font-bold text-white">{t.confirmation.title}</h2>
                 <p className="text-slate-300 text-sm">
-                    This combatant has modified data. Are you sure you want to remove it? This action cannot be undone.
+                    {t.confirmation.message}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 mt-4">
-                    <button onClick={onCancel} className="flex-1 p-3 rounded-lg bg-slate-500/20 text-slate-300 hover:bg-slate-500/40 transition-colors duration-200 font-semibold">Cancel</button>
-                    <button onClick={onConfirm} className="flex-1 p-3 rounded-lg bg-red-500/80 text-white hover:bg-red-500 transition-colors duration-200 font-semibold">Remove</button>
+                    <button onClick={onCancel} className="flex-1 p-3 rounded-lg bg-slate-500/20 text-slate-300 hover:bg-slate-500/40 transition-colors duration-200 font-semibold">{t.confirmation.cancel}</button>
+                    <button onClick={onConfirm} className="flex-1 p-3 rounded-lg bg-red-500/80 text-white hover:bg-red-500 transition-colors duration-200 font-semibold">{t.confirmation.remove}</button>
                 </div>
             </div>
         </div>
@@ -443,21 +632,22 @@ interface UpdateLogModalProps {
     isLoading: boolean;
     error: string | null;
     onRefresh: () => void;
+    t: TranslationSet;
 }
 
-const UpdateLogModal: React.FC<UpdateLogModalProps> = ({ onClose, logContent, isLoading, error, onRefresh }) => {
+const UpdateLogModal: React.FC<UpdateLogModalProps> = ({ onClose, logContent, isLoading, error, onRefresh, t }) => {
     return (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 fade-in">
             <div className="card-container w-full max-w-lg rounded-2xl p-4 sm:p-6 flex flex-col gap-4" role="dialog" aria-modal="true" aria-labelledby="update-log-title">
                 <div className="flex justify-between items-center">
-                    <h2 id="update-log-title" className="text-xl font-bold text-white">Update Log</h2>
+                    <h2 id="update-log-title" className="text-xl font-bold text-white">{t.updateLog.title}</h2>
                     <div className="flex items-center gap-1">
-                        <Tooltip text="Refresh Log">
-                            <button onClick={onRefresh} className={`text-slate-400 hover:text-white p-2 rounded-full hover:bg-white/10 transition-transform duration-500 ${isLoading ? 'animate-spin' : 'hover:scale-110'}`} aria-label="Refresh update log" disabled={isLoading}>
+                        <Tooltip text={t.updateLog.refresh}>
+                            <button onClick={onRefresh} className={`text-slate-400 hover:text-white p-2 rounded-full hover:bg-white/10 transition-transform duration-500 ${isLoading ? 'animate-spin' : 'hover:scale-110'}`} aria-label={t.updateLog.refresh} disabled={isLoading}>
                                 <ResetIcon />
                             </button>
                         </Tooltip>
-                        <button onClick={onClose} className="text-slate-400 hover:text-white p-2 text-2xl leading-none" aria-label="Close update log">&times;</button>
+                        <button onClick={onClose} className="text-slate-400 hover:text-white p-2 text-2xl leading-none" aria-label={t.updateLog.close}>&times;</button>
                     </div>
                 </div>
                 <div className="bg-[var(--input-bg)] rounded-lg p-4 max-h-[75vh] sm:max-h-[60vh] overflow-y-auto pr-2 border border-slate-700/50 min-h-[12rem] flex flex-col">
@@ -467,10 +657,10 @@ const UpdateLogModal: React.FC<UpdateLogModalProps> = ({ onClose, logContent, is
                         </div>
                     ) : error ? (
                          <div className="flex-grow flex flex-col justify-center items-center text-center p-4">
-                            <p className="text-red-400 font-semibold">Failed to Load Updates</p>
+                            <p className="text-red-400 font-semibold">{t.updateLog.failed}</p>
                             <p className="text-slate-400 text-xs mt-1">{error}</p>
                             <button onClick={onRefresh} className="mt-4 text-sm bg-red-500/20 text-red-300 hover:bg-red-500/40 px-4 py-2 rounded-lg transition-colors font-semibold">
-                                Try Again
+                                {t.updateLog.tryAgain}
                             </button>
                         </div>
                     ) : (
@@ -478,11 +668,45 @@ const UpdateLogModal: React.FC<UpdateLogModalProps> = ({ onClose, logContent, is
                     )}
                 </div>
                 <div className="flex justify-end gap-4 mt-2">
-                    <button onClick={onClose} className="w-full sm:w-auto p-3 px-8 rounded-lg bg-[var(--accent-color)] text-white hover:bg-blue-500 transition-colors duration-200 font-semibold">Done</button>
+                    <button onClick={onClose} className="w-full sm:w-auto p-3 px-8 rounded-lg bg-[var(--accent-color)] text-white hover:bg-blue-500 transition-colors duration-200 font-semibold">{t.updateLog.done}</button>
                 </div>
             </div>
         </div>
     );
+};
+
+const LanguageSwitch: React.FC<{
+  language: Language;
+  onLanguageChange: (lang: Language) => void;
+}> = ({ language, onLanguageChange }) => {
+  return (
+    <div className="relative flex items-center bg-[var(--input-bg)] p-1 rounded-full border border-slate-700/50 shadow-inner">
+      <div
+        className="absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] bg-[var(--accent-color)] rounded-full transition-transform duration-300 ease-in-out shadow"
+        style={{
+          transform: language === 'en' ? 'translateX(100%)' : 'translateX(0)',
+        }}
+      />
+      <button
+        onClick={() => onLanguageChange('id')}
+        aria-pressed={language === 'id'}
+        className={`relative z-10 w-16 py-2 text-sm font-semibold rounded-full transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--input-bg)] focus-visible:ring-[var(--accent-color)] ${
+          language === 'id' ? 'text-white' : 'text-slate-400 hover:text-white'
+        }`}
+      >
+        ID
+      </button>
+      <button
+        onClick={() => onLanguageChange('en')}
+        aria-pressed={language === 'en'}
+        className={`relative z-10 w-16 py-2 text-sm font-semibold rounded-full transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--input-bg)] focus-visible:ring-[var(--accent-color)] ${
+          language === 'en' ? 'text-white' : 'text-slate-400 hover:text-white'
+        }`}
+      >
+        ENG
+      </button>
+    </div>
+  );
 };
 
 
@@ -504,6 +728,13 @@ const App: React.FC = () => {
     const [logContent, setLogContent] = useState<string>('');
     const [isLogLoading, setIsLogLoading] = useState(false);
     const [logError, setLogError] = useState<string | null>(null);
+
+    const [language, setLanguage] = useState<Language>('en');
+    const t = useMemo(() => translations[language], [language]);
+
+    const handleLanguageChange = (lang: Language) => {
+        setLanguage(lang);
+    };
 
     const handleCalculatorUpdate = (index: number) => <K extends keyof CalculatorState>(
         field: K,
@@ -601,7 +832,7 @@ const App: React.FC = () => {
                     Chaos Zero Nightmare Save Data Tracker
                 </h1>
                 <p className="mt-2 text-sm sm:text-base text-[var(--text-secondary)] max-w-2xl mx-auto">
-                    A tool to calculate and track your Faint Memory points to control which card you want to keep in your deck. Enter your card counts for the Combatant to see if you are hitting the save data limit or not. Tools based on this <a href="https://www.reddit.com/r/ChaosZeroNightmare/comments/1ovg538/i_create_the_deck_builder_app_in_case_you_guys" target="_blank" rel="noopener noreferrer" className="text-[var(--accent-color)] hover:underline">reddit</a> post.
+                    {t.app.description}<a href="https://www.reddit.com/r/ChaosZeroNightmare/comments/1ovg538/i_create_the_deck_builder_app_in_case_you_guys" target="_blank" rel="noopener noreferrer" className="text-[var(--accent-color)] hover:underline">{t.app.redditLinkText}</a>.
                 </p>
             </header>
 
@@ -614,7 +845,7 @@ const App: React.FC = () => {
                     aria-label="How To Use Guide"
                 >
                     <QuestionIcon />
-                    <span>How To Use</span>
+                    <span>{t.app.howToUse}</span>
                 </a>
                 <a
                     href="https://docs.google.com/spreadsheets/d/1diExmbtbyTGMmB_-RfQvn0in-DM-gPjQu14XjviIJ0Y/edit?gid=1278070975#gid=1278070975"
@@ -624,8 +855,9 @@ const App: React.FC = () => {
                     aria-label="Read the RULES here"
                 >
                     <RulesIcon />
-                    <span>Read the RULES here</span>
+                    <span>{t.app.readRules}</span>
                 </a>
+                <LanguageSwitch language={language} onLanguageChange={handleLanguageChange} />
             </div>
 
             <main className="flex-grow text-white flex flex-wrap items-start justify-center px-4 pb-4 gap-4 sm:px-8 sm:pb-8 sm:gap-8">
@@ -642,6 +874,7 @@ const App: React.FC = () => {
                         onRemove={handleAttemptRemove}
                         canAdd={calculators.length < 6}
                         canRemove={calculators.length > 1}
+                        t={t}
                     />
                 ))}
             </main>
@@ -653,16 +886,16 @@ const App: React.FC = () => {
                         className="bg-[var(--card-bg-color)] border border-[var(--border-color)] text-white px-6 py-3 rounded-full shadow-2xl hover:bg-blue-500/30 hover:border-blue-400 transition-all duration-300 font-semibold backdrop-filter backdrop-blur-lg"
                         aria-label="Edit Point Rules"
                     >
-                        Edit Point Rule
+                        {t.app.editRule}
                     </button>
                     <button
                         onClick={handleOpenUpdateLog}
                         className="bg-[var(--card-bg-color)] border border-[var(--border-color)] text-white px-6 py-3 rounded-full shadow-2xl hover:bg-blue-500/30 hover:border-blue-400 transition-all duration-300 font-semibold backdrop-filter backdrop-blur-lg"
                         aria-label="View Update Log"
                     >
-                        Update Log
+                        {t.app.updateLog}
                     </button>
-                     <Tooltip text="Feel free to create an issue if something wrong/missing">
+                     <Tooltip text={t.app.githubTooltip} align="right">
                         <a
                             href="https://github.com/DEX-1101/CZN-Save-Data-Tracker"
                             target="_blank"
@@ -677,7 +910,7 @@ const App: React.FC = () => {
             </footer>
 
             {isSettingsOpen && (
-                <SettingsModal rules={rules} setRules={setRules} onClose={() => setIsSettingsOpen(false)} />
+                <SettingsModal rules={rules} setRules={setRules} onClose={() => setIsSettingsOpen(false)} t={t} />
             )}
             
             {showRemoveConfirm && (
@@ -687,6 +920,7 @@ const App: React.FC = () => {
                         setShowRemoveConfirm(false);
                     }}
                     onCancel={() => setShowRemoveConfirm(false)}
+                    t={t}
                 />
             )}
 
@@ -697,6 +931,7 @@ const App: React.FC = () => {
                     isLoading={isLogLoading}
                     error={logError}
                     onRefresh={fetchLog}
+                    t={t}
                 />
             )}
         </div>
