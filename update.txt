@@ -1,4 +1,9 @@
-NOTE: Currently, there is an issue when calculating a natural card that has divine epiphany, you might expect more points added, eg. +10 points more Faint Memory.
+NOTE: Currently, there is an issue when calculating a natural card that has divine epiphany, you might expect less points added.
+
+17/11/2025
+- Improve the UI and tooltip description
+- Add ID Localization
+- Add up and down button on tier selection
 
 14/11/2025
 - Add a RULE on how point/save data is calculated.
