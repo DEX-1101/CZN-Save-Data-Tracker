@@ -986,6 +986,7 @@ const App: React.FC = () => {
                     t={t}
                 />
             )}
+          <Analytics />
         </div>
     );
 };
