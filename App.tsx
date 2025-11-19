@@ -1,3 +1,4 @@
+
 import { Analytics } from '@vercel/analytics/react';
 import React, { useState, useMemo, useEffect } from 'react';
 import type { CalculatorState } from './types';
@@ -38,7 +39,9 @@ const translations = {
         normalEpiphany: (points: number) => <>
             {`${points} points per card.`}<br/><br/>
             A <strong>Neutral Card</strong> or <strong>Monster Card</strong> that has an <strong>Epiphany</strong> upgrade.<br/><br/>
-           <strong>Note:</strong> <strong>Normal Epiphany</strong> and <strong>Divine Epiphany</strong> on Neutral/Monster Card are counted separately. If a Neutral/Monster Card has a Divine Epiphany, you must add +1 here AND +1 in the Divine Epiphany section.
+            <strong>Note:</strong> <strong>Regular Epiphany</strong> and <strong>Divine Epiphany</strong> on <strong>Neutral/Monster Cards</strong> are counted separately.<br/>
+            If a <strong>Neutral Card</strong> has a <strong>Divine Epiphany</strong>, you must add +1 here and +1 in the <strong>Divine Epiphany</strong> section.<br/><br/>
+            For some reason, a <strong>Monster Card</strong> with a <strong>Regular Epiphany</strong> does not give any additional points. Only <strong>Divine Epiphany</strong> gives +20 points, so keep that in mind.
         </>,
         divineEpiphany: (points: number) => <>{`${points} points per card.`}<br/><br/>Any <strong>Divine Epiphany</strong> upgrade on <strong>All Cards</strong> in your deck.</>,
         forbiddenCard: (points: number) => <>{`${points} points per card.`}<br/><br/>A card obtained from a <strong>chaos event</strong>. These cards will always be saved, based on the in-game description.</>,
@@ -108,7 +111,9 @@ const translations = {
         normalEpiphany: (points: number) => <>
             {`${points} poin per kartu.`}<br/><br/>
             Sebuah <strong>Neutral Card</strong> atau <strong>Monster Card</strong> yang memiliki upgrade <strong>Epiphany</strong>.<br/><br/>
-            <strong>Catatan:</strong> <strong>Normal Epiphany</strong> dan <strong>Divine Epiphany</strong> pada Neutral/Monster Card dihitung secara terpisah. Jika Neutral/Monster Card memiliki Divine Epiphany, harus ditambahkan +1 di sini DAN +1 di bagian Divine Epiphany.
+            <strong>Catatan:</strong> <strong>Regular Epiphany</strong> dan <strong>Divine Epiphany</strong> pada <strong>Neutral/Monster Cards</strong> dihitung secara terpisah.<br/>
+            Jika sebuah <strong>Neutral Card</strong> memiliki <strong>Divine Epiphany</strong>, Anda harus menambahkan +1 di sini dan +1 di bagian <strong>Divine Epiphany</strong>.<br/><br/>
+            Karena alasan tertentu, sebuah <strong>Monster Card</strong> dengan <strong>Regular Epiphany</strong> tidak memberikan poin tambahan apa pun. Hanya <strong>Divine Epiphany</strong> yang memberikan +20 poin, jadi harap diingat.
         </>,
         divineEpiphany: (points: number) => <>{`${points} poin per kartu.`}<br/><br/>Setiap upgrade <strong>Divine Epiphany</strong> pada <strong>Semua Kartu</strong> di dalam deck.</>,
         forbiddenCard: (points: number) => <>{`${points} poin per kartu.`}<br/><br/>Kartu yang didapat dari <strong>chaos event</strong>. Kartu-kartu ini akan selalu tersimpan, berdasarkan deskripsi di dalam game.</>,
@@ -981,7 +986,6 @@ const App: React.FC = () => {
                     t={t}
                 />
             )}
-          <Analytics />
         </div>
     );
 };
