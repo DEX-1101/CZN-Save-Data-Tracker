@@ -719,8 +719,33 @@ const App: React.FC = () => {
     const defaultState: CalculatorState[] = [
         { ...initialCalculatorState, characterName: 'Combatant 1' },
     ];
-    const [calculators, setCalculators] = useState<CalculatorState[]>(defaultState);
-    const [rules, setRules] = useState<Rules>(DEFAULT_POINTS);
+    
+    const STORAGE_KEYS = {
+        CALCULATORS: 'czn_tracker_calculators',
+        RULES: 'czn_tracker_rules',
+        LANGUAGE: 'czn_tracker_language'
+    };
+
+    const [calculators, setCalculators] = useState<CalculatorState[]>(() => {
+        try {
+            const saved = localStorage.getItem(STORAGE_KEYS.CALCULATORS);
+            return saved ? JSON.parse(saved) : defaultState;
+        } catch (e) {
+            console.error("Failed to load calculators from local storage", e);
+            return defaultState;
+        }
+    });
+
+    const [rules, setRules] = useState<Rules>(() => {
+        try {
+            const saved = localStorage.getItem(STORAGE_KEYS.RULES);
+            return saved ? JSON.parse(saved) : DEFAULT_POINTS;
+        } catch (e) {
+            console.error("Failed to load rules from local storage", e);
+            return DEFAULT_POINTS;
+        }
+    });
+    
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
     const [isUpdateLogOpen, setIsUpdateLogOpen] = useState(false);
@@ -729,8 +754,29 @@ const App: React.FC = () => {
     const [isLogLoading, setIsLogLoading] = useState(false);
     const [logError, setLogError] = useState<string | null>(null);
 
-    const [language, setLanguage] = useState<Language>('en');
+    const [language, setLanguage] = useState<Language>(() => {
+        try {
+            const saved = localStorage.getItem(STORAGE_KEYS.LANGUAGE);
+            return (saved === 'en' || saved === 'id') ? saved : 'en';
+        } catch (e) {
+             console.error("Failed to load language from local storage", e);
+            return 'en';
+        }
+    });
     const t = useMemo(() => translations[language], [language]);
+
+    // Persistence Effects
+    useEffect(() => {
+        localStorage.setItem(STORAGE_KEYS.CALCULATORS, JSON.stringify(calculators));
+    }, [calculators]);
+
+    useEffect(() => {
+        localStorage.setItem(STORAGE_KEYS.RULES, JSON.stringify(rules));
+    }, [rules]);
+
+    useEffect(() => {
+        localStorage.setItem(STORAGE_KEYS.LANGUAGE, language);
+    }, [language]);
 
     const handleLanguageChange = (lang: Language) => {
         setLanguage(lang);
@@ -753,6 +799,7 @@ const App: React.FC = () => {
             updatedCalculators[index] = {
                 characterName: updatedCalculators[index].characterName,
                 ...initialCalculatorState,
+                mapTier: updatedCalculators[index].mapTier,
             };
             return updatedCalculators;
         });
