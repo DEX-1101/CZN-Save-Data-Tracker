@@ -1,6 +1,9 @@
-19/11/2025
-- UPDATE CLARIFICATION TOOLTIP (?) For counting Monster Card that has Epiphany on /M Card
-Epiphany section, read it if you're planning to Save a Deck that include Monster Card. 
+== Updated Clarification Tooltip (?) ==
+For counting Monster Cards that have Epiphany in the N/M Card
+Epiphany section.
+Read it if you're planning to make a deck that includes a Monster Card.
+
+19/11/2025 
 - Value now stored on your local browser storage.
 - Reset button now only reset the value except the Tier Selection and Combatan Name.
 - Add my wife background.. HOLY BIGGIE...
