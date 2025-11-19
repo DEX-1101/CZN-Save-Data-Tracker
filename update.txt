@@ -1,5 +1,3 @@
-NOTE: Currently, there is an issue when calculating a natural card that has divine epiphany, you might expect less points added.
-
 19/11/2025
 - Value now stored on your local browser storage.
 - Reset button now only reset the value except the Tier Selection and Combatan Name.
