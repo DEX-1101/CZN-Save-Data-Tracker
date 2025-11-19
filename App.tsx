@@ -1,4 +1,4 @@
-
+import { Analytics } from '@vercel/analytics/react';
 import React, { useState, useMemo, useEffect } from 'react';
 import type { CalculatorState } from './types';
 import { DEFAULT_POINTS, calculateSpecialPoints, calculateTierLimit, TIER_OPTIONS } from './constants';
@@ -934,6 +934,7 @@ const App: React.FC = () => {
                     t={t}
                 />
             )}
+          <Analytics />
         </div>
     );
 };
