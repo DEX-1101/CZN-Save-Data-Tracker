@@ -38,7 +38,7 @@ const translations = {
         normalEpiphany: (points: number) => <>
             {`${points} points per card.`}<br/><br/>
             A <strong>Neutral Card</strong> or <strong>Monster Card</strong> that has an <strong>Epiphany</strong> upgrade.<br/><br/>
-            <strong>Note:</strong> <strong>Normal Epiphany</strong> and <strong>Divine Epiphany</strong> on Neutral/Monster Card are counted separately. If a Neutral/Monster Card has a Divine Epiphany, you must add +1 here AND +1 in the Divine Epiphany section.
+            <strong>Note:</strong> <strong>Normal Epiphany</strong> and <strong>Divine Epiphany</strong> on Neutral/Monster Card are counted separately. If a Neutral Card has a Divine Epiphany, you must add +1 here AND +1 in the Divine Epiphany section. <br></br><span style="color: red;">For some reason, a <strong>Monster Card</strong> that have <strong>Regular Epiphany</strong> doesn't add more point, only the <strong>Divine Epiphany</strong> that add +20 point, so keep in mind. </span>
         </>,
         divineEpiphany: (points: number) => <>{`${points} points per card.`}<br/><br/>Any <strong>Divine Epiphany</strong> upgrade on <strong>All Cards</strong> in your deck.</>,
         forbiddenCard: (points: number) => <>{`${points} points per card.`}<br/><br/>A card obtained from a <strong>chaos event</strong>. These cards will always be saved, based on the in-game description.</>,
