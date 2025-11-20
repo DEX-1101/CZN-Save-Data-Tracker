@@ -758,6 +758,19 @@ const App: React.FC = () => {
     const [logContent, setLogContent] = useState<string>('');
     const [isLogLoading, setIsLogLoading] = useState(false);
     const [logError, setLogError] = useState<string | null>(null);
+    const [showGooner, setShowGooner] = useState(false);
+
+    useEffect(() => {
+        const startTime = Date.now();
+        const interval = setInterval(() => {
+            if (Date.now() - startTime >= 15 * 60 * 1000) { // 15 minutes
+                setShowGooner(true);
+                clearInterval(interval);
+            }
+        }, 1000);
+        
+        return () => clearInterval(interval);
+    }, []);
 
     const [language, setLanguage] = useState<Language>(() => {
         try {
@@ -885,8 +898,16 @@ const App: React.FC = () => {
                 
                 <div className="flex flex-col items-center">
                      {/* Main Title with Gradient and Shadow */}
-                    <h1 className="relative z-10 text-4xl sm:text-6xl md:text-7xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white via-blue-50 to-blue-300 drop-shadow-[0_0_25px_rgba(59,130,246,0.3)] mb-0 pb-2 sm:pb-4">
-                        Chaos Zero Nightmare
+                    <h1 className="relative z-10 flex flex-wrap justify-center items-center gap-2 text-4xl sm:text-6xl md:text-7xl font-black tracking-tighter mb-0 pb-2 sm:pb-4 drop-shadow-[0_0_25px_rgba(59,130,246,0.3)]">
+                        <span className="text-transparent bg-clip-text bg-gradient-to-b from-white via-blue-50 to-blue-300 leading-tight">
+                            Chaos Zero
+                        </span>
+                        <div className="relative h-[1.25em] overflow-hidden">
+                            <div className={`text-left transition-transform duration-[1000ms] ease-in-out ${showGooner ? '-translate-y-1/2' : 'translate-y-0'}`}>
+                                <span className="block text-transparent bg-clip-text bg-gradient-to-b from-white via-blue-50 to-blue-300 leading-tight">Nightmare</span>
+                                <span className="block text-transparent bg-clip-text bg-gradient-to-b from-white via-blue-50 to-blue-300 leading-tight">Gooner</span>
+                            </div>
+                        </div>
                     </h1>
                     
                     {/* Subtitle with tracking */}
@@ -896,7 +917,7 @@ const App: React.FC = () => {
 
                      {/* Description */}
                     <div className="relative z-10 max-w-2xl mx-auto">
-                         <div className="h-1 w-20 bg-gradient-to-r from-transparent via-blue-500 to-transparent mx-auto mb-3 opacity-50 rounded-full"></div>
+                         <div className="fluid-separator mx-auto mb-5"></div>
                         <p className="text-sm sm:text-base text-slate-400 leading-relaxed font-medium">
                             {t.app.description}
                             <a 
