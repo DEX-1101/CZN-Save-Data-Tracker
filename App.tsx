@@ -759,12 +759,14 @@ const App: React.FC = () => {
     const [isLogLoading, setIsLogLoading] = useState(false);
     const [logError, setLogError] = useState<string | null>(null);
     const [showGooner, setShowGooner] = useState(false);
+    const [animationComplete, setAnimationComplete] = useState(false);
 
     useEffect(() => {
         const startTime = Date.now();
         const interval = setInterval(() => {
             if (Date.now() - startTime >= 15 * 60 * 1000) { // 15 minutes
                 setShowGooner(true);
+                setTimeout(() => setAnimationComplete(true), 1000);
                 clearInterval(interval);
             }
         }, 1000);
@@ -903,10 +905,16 @@ const App: React.FC = () => {
                             Chaos Zero
                         </span>
                         <div className="relative h-[1.25em] overflow-hidden">
-                            <div className={`text-left transition-transform duration-[1000ms] ease-in-out ${showGooner ? '-translate-y-1/2' : 'translate-y-0'}`}>
-                                <span className="block text-transparent bg-clip-text bg-gradient-to-b from-white via-blue-50 to-blue-300 leading-tight">Nightmare</span>
-                                <span className="block text-transparent bg-clip-text bg-gradient-to-b from-white via-blue-50 to-blue-300 leading-tight">Gooner</span>
-                            </div>
+                            {animationComplete ? (
+                                <span className="block text-transparent bg-clip-text bg-gradient-to-b from-white via-blue-50 to-blue-300 leading-tight">
+                                    Gooner
+                                </span>
+                            ) : (
+                                <div className={`transition-transform duration-[1000ms] ease-in-out ${showGooner ? '-translate-y-1/2' : 'translate-y-0'} text-left`}>
+                                    <span className="block text-transparent bg-clip-text bg-gradient-to-b from-white via-blue-50 to-blue-300 leading-tight">Nightmare</span>
+                                    <span className="block text-transparent bg-clip-text bg-gradient-to-b from-white via-blue-50 to-blue-300 leading-tight">Gooner</span>
+                                </div>
+                            )}
                         </div>
                     </h1>
                     
