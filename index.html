@@ -3,7 +3,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/webp" href="https://raw.githubusercontent.com/DEX-1101/Studio-Gallery/refs/heads/main/resource/doro.webp" />
+    <link rel="icon" type="image/svg+xml" href="https://raw.githubusercontent.com/DEX-1101/CZN-Save-Data-Tracker/4055cedc0c8db4b1f535a7f1826c2380f44a5e24/asset/zx.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chaos Zero Nightmare Save Data Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -12,13 +12,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
       :root {
-        --bg-color: #1a1a1a;
-        --card-bg-color: rgba(30, 30, 30, 0.65);
+        --bg-color: #050505;
+        --card-bg-color: rgba(0, 0, 0, 0.6);
         --border-color: rgba(255, 255, 255, 0.1);
         --accent-color: #0078d4;
         --text-primary: #f0f0f0;
         --text-secondary: #a0a0a0;
-        --input-bg: rgba(0, 0, 0, 0.2);
+        --input-bg: rgba(0, 0, 0, 0.6);
       }
 
       body {
@@ -66,9 +66,26 @@
 
       .card-container {
         background-color: var(--card-bg-color);
-        backdrop-filter: blur(20px) saturate(180%);
-        -webkit-backdrop-filter: blur(20px) saturate(180%);
         border: 1px solid var(--border-color);
+      }
+
+      @keyframes bluePulseLoop {
+        0% {
+          box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+          border-color: rgba(59, 130, 246, 0.4);
+        }
+        50% {
+           box-shadow: 0 0 20px 0 rgba(59, 130, 246, 0.6);
+           border-color: rgba(59, 130, 246, 1);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+          border-color: rgba(59, 130, 246, 0.4);
+        }
+      }
+      
+      .animate-blue-loop {
+        animation: bluePulseLoop 2s infinite ease-in-out;
       }
     </style>
   <script type="importmap">
