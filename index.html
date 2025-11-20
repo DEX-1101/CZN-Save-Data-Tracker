@@ -87,6 +87,41 @@
       .animate-blue-loop {
         animation: bluePulseLoop 2s infinite ease-in-out;
       }
+
+      @keyframes fluidSeparator {
+        0% {
+          width: 30%;
+          opacity: 0.4;
+          filter: drop-shadow(0 0 0px rgba(59, 130, 246, 0));
+        }
+        50% {
+          width: 80%;
+          opacity: 1;
+          filter: drop-shadow(0 0 12px rgba(59, 130, 246, 0.8));
+        }
+        100% {
+          width: 30%;
+          opacity: 0.4;
+          filter: drop-shadow(0 0 0px rgba(59, 130, 246, 0));
+        }
+      }
+
+      .fluid-separator {
+        height: 3px;
+        background: linear-gradient(90deg, transparent, #3b82f6, transparent);
+        border-radius: 9999px;
+        animation: fluidSeparator 4s ease-in-out infinite;
+      }
+
+      @keyframes textSlide {
+        0%, 45% { transform: translateY(0); }
+        50%, 95% { transform: translateY(-50%); }
+        100% { transform: translateY(0); }
+      }
+
+      .animate-text-slide {
+        animation: textSlide 10s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      }
     </style>
   <script type="importmap">
 {
