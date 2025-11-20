@@ -173,7 +173,7 @@ const Tooltip: React.FC<TooltipProps> = ({ text, children, align = 'center' }) =
   return (
     <div className="relative flex items-center group">
       {children}
-      <div className={`absolute bottom-full ${positionClasses[align]} mb-2 w-max max-w-[90vw] sm:max-w-xs p-2 text-xs text-white bg-black/80 rounded-md shadow-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 invisible group-hover:visible group-focus-within:visible z-10 pointer-events-none`}>
+      <div className={`absolute bottom-full ${positionClasses[align]} mb-2 w-max max-w-[90vw] sm:max-w-xs p-2 text-xs text-white bg-black/90 backdrop-blur-md border border-white/10 rounded-md shadow-xl opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-300 invisible group-hover:visible group-focus-within:visible z-10 pointer-events-none`}>
         {text}
       </div>
     </div>
@@ -181,14 +181,14 @@ const Tooltip: React.FC<TooltipProps> = ({ text, children, align = 'center' }) =
 };
 
 const ChevronUp = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
-      <path fillRule="evenodd" d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708z"/>
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 15l-6-6-6 6"/>
     </svg>
 );
   
 const ChevronDown = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
-      <path fillRule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/>
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 9l6 6 6-6"/>
     </svg>
 );
 
@@ -224,7 +224,7 @@ const NumberInput: React.FC<NumberInputProps> = ({ id, label, value, onValueChan
        <div className="flex items-center gap-1.5">
             {tooltipText && (
               <Tooltip text={tooltipText} align="left">
-                <button type="button" className="text-slate-500 hover:text-white transition-colors duration-200 cursor-help rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--card-bg-color)] focus:ring-[var(--accent-color)]" aria-label={`Help for ${finalAriaLabel}`}>
+                <button type="button" className="p-1 text-slate-500 hover:text-white hover:bg-white/10 transition-colors duration-200 cursor-help rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[var(--card-bg-color)] focus:ring-[var(--accent-color)]" aria-label={`Help for ${finalAriaLabel}`}>
                   <QuestionIcon />
                 </button>
               </Tooltip>
@@ -233,12 +233,12 @@ const NumberInput: React.FC<NumberInputProps> = ({ id, label, value, onValueChan
               {label}
             </label>
         </div>
-      <div className={`flex items-center flex-shrink-0 bg-[var(--input-bg)] rounded-lg border transition-all duration-300 focus-within:ring-1 ${
+      <div className={`flex items-center flex-shrink-0 bg-[var(--input-bg)] rounded-lg border transition-colors duration-300 focus-within:ring-1 ${
           isOverLimit && value > 0
-            ? 'border-red-500 focus-within:border-red-500 focus-within:ring-red-500/50'
-            : `focus-within:border-[var(--accent-color)] focus-within:ring-[var(--accent-color)]/50 ${value > 0 ? 'border-[var(--accent-color)]' : 'border-slate-700/50'}`
+            ? 'border-red-500 focus-within:border-red-500 focus-within:ring-red-500/20'
+            : `focus-within:border-blue-500 focus-within:border-blue-500 focus-within:ring-blue-500/20 ${value > 0 ? 'border-blue-500' : 'border-white/5'}`
         }`}>
-        <button onClick={() => adjustValue(-1)} className="h-10 w-9 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 rounded-l-lg transition-colors" aria-label={`Decrease ${finalAriaLabel}`}>
+        <button onClick={() => adjustValue(-1)} className="h-10 w-9 flex items-center justify-center text-slate-200 hover:text-white hover:bg-white/5 rounded-l-lg transition-colors" aria-label={`Decrease ${finalAriaLabel}`}>
           <ChevronDown />
         </button>
         <input
@@ -249,7 +249,7 @@ const NumberInput: React.FC<NumberInputProps> = ({ id, label, value, onValueChan
           min="0"
           className="w-16 bg-transparent text-white p-2 text-center focus:outline-none"
         />
-        <button onClick={() => adjustValue(1)} className="h-10 w-9 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 rounded-r-lg transition-colors" aria-label={`Increase ${finalAriaLabel}`}>
+        <button onClick={() => adjustValue(1)} className="h-10 w-9 flex items-center justify-center text-slate-200 hover:text-white hover:bg-white/5 rounded-r-lg transition-colors" aria-label={`Increase ${finalAriaLabel}`}>
           <ChevronUp />
         </button>
       </div>
@@ -383,7 +383,7 @@ const CalculatorInstance: React.FC<CalculatorInstanceProps> = ({ instanceIndex, 
                                 <button
                                     onClick={onRemove}
                                     disabled={!canRemove}
-                                    className="p-3 flex-shrink-0 rounded-lg bg-red-500/10 text-red-300 hover:bg-red-500/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="p-3 flex-shrink-0 rounded-lg bg-red-500/10 text-red-300 hover:bg-red-500/30 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                                     aria-label="Remove last combatant"
                                 >
                                     <MinusIcon />
@@ -393,7 +393,7 @@ const CalculatorInstance: React.FC<CalculatorInstanceProps> = ({ instanceIndex, 
                                 <button
                                     onClick={onAdd}
                                     disabled={!canAdd}
-                                    className="p-3 flex-shrink-0 rounded-lg bg-green-500/10 text-green-300 hover:bg-green-500/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="p-3 flex-shrink-0 rounded-lg bg-green-500/10 text-green-300 hover:bg-green-500/30 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                                     aria-label="Add new combatant"
                                 >
                                 <PlusIcon />
@@ -406,11 +406,11 @@ const CalculatorInstance: React.FC<CalculatorInstanceProps> = ({ instanceIndex, 
             
             <div className="flex items-center gap-4">
                 <label htmlFor={`map-tier-${values.characterName}`} className="text-slate-300 text-sm font-medium whitespace-nowrap">{t.calculator.saveDataTier}</label>
-                <div className="flex items-center flex-grow bg-[var(--input-bg)] rounded-lg border border-slate-700 focus-within:border-[var(--accent-color)] focus-within:ring-1 focus-within:ring-[var(--accent-color)]/50 transition-all duration-300">
+                <div className="flex items-center flex-grow bg-[var(--input-bg)] rounded-lg border border-slate-700 focus-within:border-[var(--accent-color)] focus-within:ring-1 focus-within:ring-[var(--accent-color)]/50 transition-colors duration-300">
                      <button
                         onClick={() => handleTierChange(-1)}
                         disabled={values.mapTier <= TIER_OPTIONS[0]}
-                        className="h-10 w-9 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 rounded-l-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="h-10 w-9 flex items-center justify-center text-slate-200 hover:text-white hover:bg-white/5 rounded-l-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         aria-label="Decrease Save Data Tier"
                     >
                         <ChevronDown />
@@ -428,7 +428,7 @@ const CalculatorInstance: React.FC<CalculatorInstanceProps> = ({ instanceIndex, 
                      <button
                         onClick={() => handleTierChange(1)}
                         disabled={values.mapTier >= TIER_OPTIONS[TIER_OPTIONS.length - 1]}
-                        className="h-10 w-9 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 rounded-r-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="h-10 w-9 flex items-center justify-center text-slate-200 hover:text-white hover:bg-white/5 rounded-r-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         aria-label="Increase Save Data Tier"
                     >
                         <ChevronUp />
@@ -559,7 +559,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ rules, setRules, onClose,
             <div className="card-container w-full max-w-md rounded-2xl p-4 sm:p-6 flex flex-col gap-4" role="dialog" aria-modal="true" aria-labelledby="settings-title">
                 <div className="flex justify-between items-center">
                     <h2 id="settings-title" className="text-xl font-bold text-white">{t.settings.title}</h2>
-                    <button onClick={onClose} className="text-slate-400 hover:text-white p-2 text-2xl leading-none" aria-label={t.settings.close}>&times;</button>
+                    <button onClick={onClose} className="text-slate-400 hover:text-white p-2 text-2xl leading-none rounded-full hover:bg-white/10 transition-colors" aria-label={t.settings.close}>&times;</button>
                 </div>
                 <div className="flex flex-col gap-2 max-h-[75vh] sm:max-h-[60vh] overflow-y-auto pr-2">
                     <h3 className="text-slate-400 font-semibold text-xs uppercase tracking-wider">{t.settings.cardPointsHeader}</h3>
@@ -599,7 +599,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ rules, setRules, onClose,
                 </div>
                 <div className="flex flex-col sm:flex-row gap-4 mt-4">
                     <button onClick={handleResetToDefault} className="flex-1 p-3 rounded-lg bg-red-500/20 text-red-300 hover:bg-red-500/40 transition-colors duration-200 font-semibold">{t.settings.reset}</button>
-                    <button onClick={onClose} className="flex-1 p-3 rounded-lg bg-[var(--accent-color)] text-white hover:bg-blue-500 transition-colors duration-200 font-semibold">{t.settings.done}</button>
+                    <button onClick={onClose} className="flex-1 p-3 rounded-lg bg-blue-600/80 text-white hover:bg-blue-600/95 transition-colors duration-200 font-semibold">{t.settings.done}</button>
                 </div>
             </div>
         </div>
@@ -623,7 +623,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ onConfirm, onCanc
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 mt-4">
                     <button onClick={onCancel} className="flex-1 p-3 rounded-lg bg-slate-500/20 text-slate-300 hover:bg-slate-500/40 transition-colors duration-200 font-semibold">{t.confirmation.cancel}</button>
-                    <button onClick={onConfirm} className="flex-1 p-3 rounded-lg bg-red-500/80 text-white hover:bg-red-500 transition-colors duration-200 font-semibold">{t.confirmation.remove}</button>
+                    <button onClick={onConfirm} className="flex-1 p-3 rounded-lg bg-red-500/80 text-white hover:bg-red-500/95 transition-colors duration-200 font-semibold">{t.confirmation.remove}</button>
                 </div>
             </div>
         </div>
@@ -652,7 +652,7 @@ const UpdateLogModal: React.FC<UpdateLogModalProps> = ({ onClose, logContent, is
                                 <ResetIcon />
                             </button>
                         </Tooltip>
-                        <button onClick={onClose} className="text-slate-400 hover:text-white p-2 text-2xl leading-none" aria-label={t.updateLog.close}>&times;</button>
+                        <button onClick={onClose} className="text-slate-400 hover:text-white p-2 text-2xl leading-none rounded-full hover:bg-white/10 transition-colors" aria-label={t.updateLog.close}>&times;</button>
                     </div>
                 </div>
                 <div className="bg-[var(--input-bg)] rounded-lg p-4 max-h-[75vh] sm:max-h-[60vh] overflow-y-auto pr-2 border border-slate-700/50 min-h-[12rem] flex flex-col">
@@ -673,7 +673,7 @@ const UpdateLogModal: React.FC<UpdateLogModalProps> = ({ onClose, logContent, is
                     )}
                 </div>
                 <div className="flex justify-end gap-4 mt-2">
-                    <button onClick={onClose} className="w-full sm:w-auto p-3 px-8 rounded-lg bg-[var(--accent-color)] text-white hover:bg-blue-500 transition-colors duration-200 font-semibold">{t.updateLog.done}</button>
+                    <button onClick={onClose} className="w-full sm:w-auto p-3 px-8 rounded-lg bg-blue-600/80 text-white hover:bg-blue-600/95 transition-colors duration-200 font-semibold">{t.updateLog.done}</button>
                 </div>
             </div>
         </div>
@@ -685,9 +685,9 @@ const LanguageSwitch: React.FC<{
   onLanguageChange: (lang: Language) => void;
 }> = ({ language, onLanguageChange }) => {
   return (
-    <div className="relative flex items-center bg-[var(--input-bg)] p-1 rounded-full border border-slate-700/50 shadow-inner">
+    <div className="relative flex items-center bg-black/60 p-1 rounded-full border border-white/10 shadow-lg transform-gpu">
       <div
-        className="absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] bg-[var(--accent-color)] rounded-full transition-transform duration-300 ease-in-out shadow"
+        className="absolute top-1 bottom-1 left-1 w-[calc(50%-4px)] bg-blue-600 rounded-full transition-transform duration-300 ease-in-out shadow-sm"
         style={{
           transform: language === 'en' ? 'translateX(100%)' : 'translateX(0)',
         }}
@@ -695,7 +695,7 @@ const LanguageSwitch: React.FC<{
       <button
         onClick={() => onLanguageChange('id')}
         aria-pressed={language === 'id'}
-        className={`relative z-10 w-16 py-2 text-sm font-semibold rounded-full transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--input-bg)] focus-visible:ring-[var(--accent-color)] ${
+        className={`relative z-10 w-16 py-2 text-sm font-semibold rounded-full transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--input-bg)] focus-visible:ring-white/50 ${
           language === 'id' ? 'text-white' : 'text-slate-400 hover:text-white'
         }`}
       >
@@ -704,7 +704,7 @@ const LanguageSwitch: React.FC<{
       <button
         onClick={() => onLanguageChange('en')}
         aria-pressed={language === 'en'}
-        className={`relative z-10 w-16 py-2 text-sm font-semibold rounded-full transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--input-bg)] focus-visible:ring-[var(--accent-color)] ${
+        className={`relative z-10 w-16 py-2 text-sm font-semibold rounded-full transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--input-bg)] focus-visible:ring-white/50 ${
           language === 'en' ? 'text-white' : 'text-slate-400 hover:text-white'
         }`}
       >
@@ -879,21 +879,48 @@ const App: React.FC = () => {
 
     return (
         <div className="min-h-screen flex flex-col">
-            <header className="relative w-full p-6 sm:p-8 text-center border-b border-[var(--border-color)]">
-                 <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-wide" style={{ textShadow: '0 0 10px rgba(0, 120, 212, 0.5), 0 0 20px rgba(0, 120, 212, 0.3)' }}>
-                    Chaos Zero Nightmare Save Data Tracker
-                </h1>
-                <p className="mt-2 text-sm sm:text-base text-[var(--text-secondary)] max-w-2xl mx-auto">
-                    {t.app.description}<a href="https://www.reddit.com/r/ChaosZeroNightmare/comments/1ovg538/i_create_the_deck_builder_app_in_case_you_guys" target="_blank" rel="noopener noreferrer" className="text-[var(--accent-color)] hover:underline">{t.app.redditLinkText}</a>.
-                </p>
+            <header className="relative w-full pt-6 pb-6 sm:pt-10 sm:pb-8 px-6 text-center overflow-hidden isolate">
+                 {/* Ambient Background Glow */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-48 bg-blue-500/10 blur-[100px] rounded-full pointer-events-none -z-10" />
+                
+                <div className="flex flex-col items-center">
+                     {/* Main Title with Gradient and Shadow */}
+                    <h1 className="relative z-10 text-4xl sm:text-6xl md:text-7xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white via-blue-50 to-blue-300 drop-shadow-[0_0_25px_rgba(59,130,246,0.3)] mb-0 pb-2 sm:pb-4">
+                        Chaos Zero Nightmare
+                    </h1>
+                    
+                    {/* Subtitle with tracking */}
+                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-blue-400/90 tracking-[0.2em] uppercase mb-2 drop-shadow-md">
+                        Save Data Tracker
+                    </h2>
+
+                     {/* Description */}
+                    <div className="relative z-10 max-w-2xl mx-auto">
+                         <div className="h-1 w-20 bg-gradient-to-r from-transparent via-blue-500 to-transparent mx-auto mb-3 opacity-50 rounded-full"></div>
+                        <p className="text-sm sm:text-base text-slate-400 leading-relaxed font-medium">
+                            {t.app.description}
+                            <a 
+                                href="https://www.reddit.com/r/ChaosZeroNightmare/comments/1ovg538/i_create_the_deck_builder_app_in_case_you_guys" 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="text-blue-400 hover:text-blue-300 transition-colors border-b border-blue-400/30 hover:border-blue-300 pb-0.5 ml-1"
+                            >
+                                {t.app.redditLinkText}
+                            </a>.
+                        </p>
+                    </div>
+                </div>
+                
+                 {/* Bottom Border Gradient */}
+                <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-blue-500/20 to-transparent"></div>
             </header>
 
-            <div className="w-full flex flex-col sm:flex-row items-center justify-center gap-4 py-6 px-4">
+            <div className="w-full flex flex-col sm:flex-row items-center justify-center gap-4 py-3 px-4">
                 <a
                     href="https://raw.githubusercontent.com/DEX-1101/CZN-Save-Data-Tracker/refs/heads/main/exx.jpg"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 bg-[var(--card-bg-color)] border border-[var(--border-color)] text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-500/30 hover:border-blue-400 transition-all duration-300 font-semibold backdrop-filter backdrop-blur-lg"
+                    className="flex items-center gap-2 bg-black/60 border border-white/10 text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-600/20 hover:border-blue-400/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] transition-all duration-300 font-medium active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 transform-gpu"
                     aria-label="How To Use Guide"
                 >
                     <QuestionIcon />
@@ -903,7 +930,7 @@ const App: React.FC = () => {
                     href="https://docs.google.com/spreadsheets/d/1diExmbtbyTGMmB_-RfQvn0in-DM-gPjQu14XjviIJ0Y/edit?gid=1278070975#gid=1278070975"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 bg-[var(--card-bg-color)] border border-[var(--border-color)] text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-500/30 hover:border-blue-400 transition-all duration-300 font-semibold backdrop-filter backdrop-blur-lg"
+                    className="flex items-center gap-2 bg-black/60 border border-white/10 text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-600/20 hover:border-blue-400/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] transition-all duration-300 font-medium active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 transform-gpu"
                     aria-label="Read the RULES here"
                 >
                     <RulesIcon />
@@ -935,24 +962,26 @@ const App: React.FC = () => {
                 <div className="flex flex-col sm:flex-row gap-4 items-center">
                     <button
                         onClick={() => setIsSettingsOpen(true)}
-                        className="bg-[var(--card-bg-color)] border border-[var(--border-color)] text-white px-6 py-3 rounded-full shadow-2xl hover:bg-blue-500/30 hover:border-blue-400 transition-all duration-300 font-semibold backdrop-filter backdrop-blur-lg"
+                        className="bg-black/60 border border-white/10 text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-600/20 hover:border-blue-400/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] transition-all duration-300 font-medium active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 transform-gpu"
                         aria-label="Edit Point Rules"
                     >
                         {t.app.editRule}
                     </button>
                     <button
                         onClick={handleOpenUpdateLog}
-                        className="bg-[var(--card-bg-color)] border border-[var(--border-color)] text-white px-6 py-3 rounded-full shadow-2xl hover:bg-blue-500/30 hover:border-blue-400 transition-all duration-300 font-semibold backdrop-filter backdrop-blur-lg"
+                        className="relative group bg-black/60 border border-white/10 text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-600/20 hover:border-blue-400/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] transition-all duration-300 font-medium active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 transform-gpu"
                         aria-label="View Update Log"
                     >
-                        {t.app.updateLog}
+                        {/* Inner animated border to prevent layer repaints on the blurred container */}
+                        <span className="absolute inset-0 rounded-full border border-blue-500/60 shadow-[0_0_15px_rgba(59,130,246,0.4)] animate-pulse group-hover:opacity-0 transition-opacity duration-300 pointer-events-none"></span>
+                        <span className="relative z-10">{t.app.updateLog}</span>
                     </button>
                      <Tooltip text={t.app.githubTooltip} align="right">
                         <a
                             href="https://github.com/DEX-1101/CZN-Save-Data-Tracker"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="bg-[var(--card-bg-color)] border border-[var(--border-color)] text-white p-3 rounded-full shadow-2xl hover:bg-blue-500/30 hover:border-blue-400 transition-all duration-300 backdrop-filter backdrop-blur-lg flex items-center justify-center"
+                            className="bg-black/60 border border-white/10 text-white p-3 rounded-full shadow-lg hover:bg-blue-600/20 hover:border-blue-400/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] transition-all duration-300 flex items-center justify-center active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
                             aria-label="View source code on GitHub"
                         >
                             <GithubIcon />
