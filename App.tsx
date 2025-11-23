@@ -22,9 +22,10 @@ const translations = {
       resetTooltip: 'Reset Fields',
       removeTooltip: 'Remove Combatant',
       addTooltip: 'Add Combatant',
-      limitExceeded: 'Save Data Limit Exceeds',
+      limitExceeded: 'Limit Exceeded',
       deckNotSavedWarning: 'Your deck might not be fully saved',
       statusOk: 'OK',
+      statusPerfect: 'Perfect',
       tierPrefix: 'Tier',
       faintMemory: 'Faint Memory:',
       pointsSuffix: 'Points',
@@ -94,16 +95,17 @@ const translations = {
       resetTooltip: 'Reset Isian',
       removeTooltip: 'Hapus Combatant',
       addTooltip: 'Tambah Combatant',
-      limitExceeded: 'Batas Save Data Terlampaui',
+      limitExceeded: 'Batas Terlampaui',
       deckNotSavedWarning: 'Deck mungkin tidak tersimpan sepenuhnya',
       statusOk: 'OK',
+      statusPerfect: 'Perfect',
       tierPrefix: 'Tier',
       faintMemory: 'Faint Memory:',
       pointsSuffix: 'Poin',
       saveDataLimit: 'Batas Save Data:',
       totalPrefix: 'Total:',
       saveDataTier: 'Save Data Tier:',
-      pointOverflow: (points: number) => `${points} poin berlebih`,
+      pointOverflow: (points: number) => `${points} poin lebih`,
       tooltips: {
         neutralCard: (points: number) => <>{`${points} poin per kartu.`}<br/><br/>Kartu umum yang bisa ditemukan di toko atau dari event. Periksa galeri kartu di dalam game jika tidak yakin.</>,
         monsterCard: (points: number) => <>{`${points} poin per kartu.`}<br/><br/>Kartu yang didapat dengan mengalahkan <strong>Elite Boss</strong>.</>,
@@ -201,9 +203,10 @@ interface NumberInputProps {
   tooltipText?: React.ReactNode;
   ariaLabel?: string; // Explicit aria-label for screen readers if label is complex
   isOverLimit: boolean;
+  isPerfect?: boolean;
 }
 
-const NumberInput: React.FC<NumberInputProps> = ({ id, label, value, onValueChange, tooltipText, ariaLabel, isOverLimit }) => {
+const NumberInput: React.FC<NumberInputProps> = ({ id, label, value, onValueChange, tooltipText, ariaLabel, isOverLimit, isPerfect }) => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const numValue = parseInt(e.target.value, 10);
     if (!isNaN(numValue) && numValue >= 0) {
@@ -219,6 +222,19 @@ const NumberInput: React.FC<NumberInputProps> = ({ id, label, value, onValueChan
   
   const finalAriaLabel = ariaLabel || (typeof label === 'string' ? label : id);
 
+  const getBorderClasses = () => {
+    if (value > 0) {
+        if (isOverLimit) {
+            return 'border-red-500 focus-within:border-red-500 focus-within:ring-red-500/20';
+        }
+        if (isPerfect) {
+            return 'border-green-500 focus-within:border-green-500 focus-within:ring-green-500/20';
+        }
+        return 'border-blue-500 focus-within:border-blue-500 focus-within:ring-blue-500/20';
+    }
+    return 'border-white/5 focus-within:border-blue-500 focus-within:ring-blue-500/20';
+  };
+
   return (
     <div className="grid grid-cols-[1fr_auto] items-center gap-4 h-12">
        <div className="flex items-center gap-1.5">
@@ -233,11 +249,7 @@ const NumberInput: React.FC<NumberInputProps> = ({ id, label, value, onValueChan
               {label}
             </label>
         </div>
-      <div className={`flex items-center flex-shrink-0 bg-[var(--input-bg)] rounded-lg border transition-colors duration-300 focus-within:ring-1 ${
-          isOverLimit && value > 0
-            ? 'border-red-500 focus-within:border-red-500 focus-within:ring-red-500/20'
-            : `focus-within:border-blue-500 focus-within:border-blue-500 focus-within:ring-blue-500/20 ${value > 0 ? 'border-blue-500' : 'border-white/5'}`
-        }`}>
+      <div className={`flex items-center flex-shrink-0 bg-[var(--input-bg)] rounded-lg border transition-colors duration-300 focus-within:ring-1 ${getBorderClasses()}`}>
         <button onClick={() => adjustValue(-1)} className="h-10 w-9 flex items-center justify-center text-slate-200 hover:text-white hover:bg-white/5 rounded-l-lg transition-colors" aria-label={`Decrease ${finalAriaLabel}`}>
           <ChevronDown />
         </button>
@@ -347,6 +359,11 @@ const CalculatorInstance: React.FC<CalculatorInstanceProps> = ({ instanceIndex, 
     }, [values.mapTier]);
 
     const isWithinLimit = totalPoints <= tierLimit;
+    const isPerfect = totalPoints === tierLimit;
+
+    // Define colors based on status
+    const accentColorBg = !isWithinLimit ? 'bg-red-500' : (isPerfect ? 'bg-green-500' : 'bg-blue-500');
+    const focusRingColor = !isWithinLimit ? 'focus:ring-red-500/50' : (isPerfect ? 'focus:ring-green-500/50' : 'focus:ring-blue-500/50');
     
     const progress = tierLimit > 0 ? Math.min((totalPoints / tierLimit) * 100, 100) : 0;
     
@@ -358,15 +375,19 @@ const CalculatorInstance: React.FC<CalculatorInstanceProps> = ({ instanceIndex, 
     };
 
     return (
-        <div className="card-container w-full max-w-2xl rounded-2xl shadow-2xl p-6 flex flex-col gap-4 transition-all duration-300 md:hover:scale-[1.02] md:hover:shadow-[0_0_30px_rgba(0,120,212,0.2)] fade-in">
+        <div className="card-container relative w-full max-w-2xl rounded-r-2xl border-l-0 shadow-2xl p-6 flex flex-col gap-4 transition-all duration-300 md:hover:scale-[1.02] md:hover:shadow-[0_0_30px_rgba(0,120,212,0.2)] fade-in">
+            <div className={`absolute top-0 left-0 bottom-0 w-1 ${accentColorBg}`}></div>
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                <input
-                    type="text"
-                    value={values.characterName}
-                    onChange={(e) => onValueChange('characterName', e.target.value)}
-                    className="w-full sm:flex-grow bg-transparent text-white rounded-lg p-3 border-b-2 border-slate-700 focus:outline-none focus:border-[var(--accent-color)] transition duration-300 text-lg font-semibold placeholder-slate-500"
-                    placeholder={t.calculator.placeholder}
-                />
+                <div className="relative w-full sm:flex-grow">
+                    <div className={`absolute top-0 left-0 bottom-0 w-1 ${accentColorBg} z-10`}></div>
+                    <input
+                        type="text"
+                        value={values.characterName}
+                        onChange={(e) => onValueChange('characterName', e.target.value)}
+                        className={`w-full bg-[var(--input-bg)] text-white rounded-r-lg py-3 pr-3 pl-5 focus:outline-none focus:ring-1 ${focusRingColor} transition duration-300 text-lg font-semibold placeholder-slate-500`}
+                        placeholder={t.calculator.placeholder}
+                    />
+                </div>
                 <div className="flex items-center gap-2 self-end sm:self-auto flex-shrink-0">
                     <Tooltip text={t.calculator.resetTooltip} align="right">
                         <button
@@ -438,11 +459,12 @@ const CalculatorInstance: React.FC<CalculatorInstanceProps> = ({ instanceIndex, 
 
             <div className="flex flex-col md:flex-row gap-3 md:gap-6">
                 <div className="flex flex-col gap-3 flex-1 min-w-0">
-                    <NumberInput isOverLimit={!isWithinLimit} id={`neutral-card-${instanceIndex}`} label="Neutral Card" value={values.neutralCard} onValueChange={(v) => onValueChange('neutralCard', v)} tooltipText={t.calculator.tooltips.neutralCard(rules.NEUTRAL_CARD)} />
-                    <NumberInput isOverLimit={!isWithinLimit} id={`monster-card-${instanceIndex}`} label="Monster Card" value={values.monsterCard} onValueChange={(v) => onValueChange('monsterCard', v)} tooltipText={t.calculator.tooltips.monsterCard(rules.MONSTER_CARD)} />
-                    <NumberInput isOverLimit={!isWithinLimit} id={`card-conversion-${instanceIndex}`} label="Card Conversion" value={values.cardConversion} onValueChange={(v) => onValueChange('cardConversion', v)} tooltipText={t.calculator.tooltips.cardConversion(rules.CARD_CONVERSION)} />
+                    <NumberInput isOverLimit={!isWithinLimit} isPerfect={isPerfect} id={`neutral-card-${instanceIndex}`} label="Neutral Card" value={values.neutralCard} onValueChange={(v) => onValueChange('neutralCard', v)} tooltipText={t.calculator.tooltips.neutralCard(rules.NEUTRAL_CARD)} />
+                    <NumberInput isOverLimit={!isWithinLimit} isPerfect={isPerfect} id={`monster-card-${instanceIndex}`} label="Monster Card" value={values.monsterCard} onValueChange={(v) => onValueChange('monsterCard', v)} tooltipText={t.calculator.tooltips.monsterCard(rules.MONSTER_CARD)} />
+                    <NumberInput isOverLimit={!isWithinLimit} isPerfect={isPerfect} id={`card-conversion-${instanceIndex}`} label="Card Conversion" value={values.cardConversion} onValueChange={(v) => onValueChange('cardConversion', v)} tooltipText={t.calculator.tooltips.cardConversion(rules.CARD_CONVERSION)} />
                     <NumberInput 
                         isOverLimit={!isWithinLimit}
+                        isPerfect={isPerfect}
                         id={`normal-epiphany-${instanceIndex}`} 
                         label={<>N/M Card<br/>Epiphany</>}
                         ariaLabel="Neutral Monster Epiphany"
@@ -450,47 +472,66 @@ const CalculatorInstance: React.FC<CalculatorInstanceProps> = ({ instanceIndex, 
                         onValueChange={(v) => onValueChange('normalEpiphany', v)} 
                         tooltipText={t.calculator.tooltips.normalEpiphany(rules.NORMAL_EPIPHANY)} 
                     />
-                    <NumberInput isOverLimit={!isWithinLimit} id={`divine-epiphany-${instanceIndex}`} label="Divine Epiphany" value={values.divineEpiphany} onValueChange={(v) => onValueChange('divineEpiphany', v)} tooltipText={t.calculator.tooltips.divineEpiphany(rules.DIVINE_EPIPHANY)} />
-                    <NumberInput isOverLimit={!isWithinLimit} id={`forbidden-card-${instanceIndex}`} label="Forbidden Card" value={values.forbiddenCard} onValueChange={(v) => onValueChange('forbiddenCard', v)} tooltipText={t.calculator.tooltips.forbiddenCard(rules.FORBIDDEN_CARD)} />
+                    <NumberInput isOverLimit={!isWithinLimit} isPerfect={isPerfect} id={`divine-epiphany-${instanceIndex}`} label="Divine Epiphany" value={values.divineEpiphany} onValueChange={(v) => onValueChange('divineEpiphany', v)} tooltipText={t.calculator.tooltips.divineEpiphany(rules.DIVINE_EPIPHANY)} />
+                    <NumberInput isOverLimit={!isWithinLimit} isPerfect={isPerfect} id={`forbidden-card-${instanceIndex}`} label="Forbidden Card" value={values.forbiddenCard} onValueChange={(v) => onValueChange('forbiddenCard', v)} tooltipText={t.calculator.tooltips.forbiddenCard(rules.FORBIDDEN_CARD)} />
                 </div>
                 
                 <div className="flex flex-col gap-3 flex-1 min-w-0">
-                    <NumberInput isOverLimit={!isWithinLimit} id={`character-card-${instanceIndex}`} label="Character Card" value={values.characterCard} onValueChange={(v) => onValueChange('characterCard', v)} tooltipText={t.calculator.tooltips.characterCard(rules.CHARACTER_CARD)} />
-                    <NumberInput isOverLimit={!isWithinLimit} id={`card-removed-${instanceIndex}`} label="Card Removed" value={values.cardRemoved} onValueChange={(v) => onValueChange('cardRemoved', v)} tooltipText={t.calculator.tooltips.cardRemoved} />
-                    <NumberInput isOverLimit={!isWithinLimit} id={`card-duplication-${instanceIndex}`} label="Card Duplication" value={values.cardDuplication} onValueChange={(v) => onValueChange('cardDuplication', v)} tooltipText={t.calculator.tooltips.cardDuplication} />
+                    <NumberInput isOverLimit={!isWithinLimit} isPerfect={isPerfect} id={`character-card-${instanceIndex}`} label="Character Card" value={values.characterCard} onValueChange={(v) => onValueChange('characterCard', v)} tooltipText={t.calculator.tooltips.characterCard(rules.CHARACTER_CARD)} />
+                    <NumberInput isOverLimit={!isWithinLimit} isPerfect={isPerfect} id={`card-removed-${instanceIndex}`} label="Card Removed" value={values.cardRemoved} onValueChange={(v) => onValueChange('cardRemoved', v)} tooltipText={t.calculator.tooltips.cardRemoved} />
+                    <NumberInput isOverLimit={!isWithinLimit} isPerfect={isPerfect} id={`card-duplication-${instanceIndex}`} label="Card Duplication" value={values.cardDuplication} onValueChange={(v) => onValueChange('cardDuplication', v)} tooltipText={t.calculator.tooltips.cardDuplication} />
                 </div>
             </div>
             
-            <div className="mt-2 pt-4 border-t border-slate-700/50 flex flex-col gap-2">
-                <div className="w-full bg-slate-900/50 rounded-full h-2.5">
-                    <div 
-                      className={`h-2.5 rounded-full transition-all duration-500 ${isWithinLimit ? 'bg-green-500' : 'bg-red-500'}`} 
-                      style={{ width: `${progress}%` }}>
-                    </div>
-                </div>
-                <div className="flex justify-between text-slate-300 text-sm">
-                    <span>
-                        {t.calculator.faintMemory} <span className={`font-bold transition-colors duration-300 ${isWithinLimit ? 'text-green-300' : 'text-red-300'}`}>
-                            {totalPoints} {t.calculator.pointsSuffix}
-                        </span>
-                    </span>
-                    <span>{t.calculator.saveDataLimit} <span className="font-bold text-white">{tierLimit}</span></span>
-                </div>
-                <div className={`text-center font-bold text-lg p-2.5 rounded-lg transition-colors duration-300 ${isWithinLimit ? 'text-green-300 bg-green-500/10' : 'text-red-300 bg-red-500/10'}`}>
-                    <div className="h-7 overflow-hidden" aria-live="polite"> {/* text-lg has line-height: 1.75rem = 28px = h-7 */}
-                        <div 
-                            className={`transition-transform duration-500 ease-in-out ${isWithinLimit ? 'translate-y-0' : '-translate-y-1/2'}`}
-                            style={{ height: '200%' }}
-                        >
-                            <div className="h-1/2 flex items-center justify-center">
-                                <span>{t.calculator.statusOk}</span>
-                            </div>
-                            <div className="h-1/2 flex items-center justify-center">
-                                <span>{t.calculator.limitExceeded}</span>
+            <div className="mt-2 pt-4 border-t border-slate-700/50 flex flex-col gap-3">
+                <div className="flex items-stretch gap-3 sm:gap-4">
+                     {/* Status Bar with integrated Progress */}
+                    <div className={`relative flex-grow flex items-center justify-center text-center font-bold text-lg border-l-2 overflow-hidden transition-colors duration-300 bg-[var(--input-bg)] ${!isWithinLimit ? 'border-red-500 text-red-300' : (isPerfect ? 'border-green-500 text-green-300' : 'border-blue-500 text-blue-300')}`}>
+                         {/* Progress Fill */}
+                         <div 
+                            className={`absolute top-0 left-0 h-full transition-all duration-500 ${!isWithinLimit ? 'bg-red-500/20' : (isPerfect ? 'bg-green-500/20' : 'bg-blue-500/20')}`} 
+                            style={{ width: `${progress}%` }}>
+                        </div>
+
+                         <div className="relative z-10 h-7 w-full overflow-hidden" aria-live="polite">
+                            <div 
+                                className={`absolute w-full top-0 left-0 transition-transform duration-500 ease-in-out ${
+                                    !isWithinLimit 
+                                        ? '-translate-y-[66.66%]' 
+                                        : isPerfect 
+                                            ? '-translate-y-[33.33%]' 
+                                            : 'translate-y-0'
+                                }`}
+                                style={{ height: '300%' }}
+                            >
+                                <div className="h-1/3 flex items-center justify-center">
+                                    <span>{t.calculator.statusOk}</span>
+                                </div>
+                                <div className="h-1/3 flex items-center justify-center">
+                                    <span>{t.calculator.statusPerfect}</span>
+                                </div>
+                                <div className="h-1/3 flex items-center justify-center">
+                                    <span>{t.calculator.limitExceeded}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
+                    
+                    {/* Faint Memory Box */}
+                    <div className={`flex flex-col justify-center py-1.5 px-3 bg-[var(--input-bg)] rounded-r-lg border-l-2 ${!isWithinLimit ? 'border-red-500' : (isPerfect ? 'border-green-500' : 'border-blue-500')} transition-colors duration-300 min-w-[80px]`}>
+                         <span className="text-[0.6rem] font-bold text-slate-400 uppercase tracking-wider mb-0.5 leading-none">
+                            {t.calculator.faintMemory.replace(':', '')}
+                        </span>
+                        <div className="flex items-baseline whitespace-nowrap leading-none">
+                             <span className={`text-base font-bold transition-colors duration-300 ${!isWithinLimit ? 'text-red-300' : (isPerfect ? 'text-green-300' : 'text-blue-300')}`}>
+                                {totalPoints}
+                            </span>
+                            <span className="text-slate-400 mx-1 text-sm font-bold">/</span>
+                            <span className="text-slate-200 text-base font-bold">{tierLimit}</span>
+                        </div>
+                    </div>
                 </div>
+
                 {!isWithinLimit && (
                     <div className="flex flex-col items-center justify-center gap-1 text-red-300 text-xs mt-1 fade-in">
                         <div className="flex items-center gap-2">
