@@ -1,8 +1,7 @@
-
 import { Analytics } from '@vercel/analytics/react';
 import React, { useState, useMemo, useEffect } from 'react';
 import type { CalculatorState } from './types';
-import { DEFAULT_POINTS, calculateSpecialPoints, calculateTierLimit, TIER_OPTIONS } from './constants';
+import { DEFAULT_POINTS, calculateDuplicationPoints, calculateTierLimit, TIER_OPTIONS } from './constants';
 
 type Rules = typeof DEFAULT_POINTS;
 
@@ -23,6 +22,7 @@ const translations = {
       removeTooltip: 'Remove Combatant',
       addTooltip: 'Add Combatant',
       limitExceeded: 'Limit Exceeded',
+      limitReached: 'Limit Reached',
       deckNotSavedWarning: 'Your deck might not be fully saved',
       statusOk: 'OK',
       statusPerfect: 'Perfect',
@@ -32,36 +32,23 @@ const translations = {
       saveDataLimit: 'Save Data Limit:',
       totalPrefix: 'Total:',
       saveDataTier: 'Save Data Tier:',
-      pointOverflow: (points: number) => `${points} point overflow`,
+      pointOverflow: (points: number) => `${points} pts overflow`,
       tooltips: {
         neutralCard: (points: number) => <>{`${points} points per card.`}<br/><br/>A general card that can be found in the shop or from events. Check the in-game card gallery if you're not sure.</>,
-        monsterCard: (points: number) => <>{`${points} points per card.`}<br/><br/>Card obtained by defeating an <strong>Elite Boss</strong>.</>,
-        cardConversion: (points: number) => <>{`${points} points per card.`}<br/><br/>Any of your combatant cards can be converted into a <strong>Neutral Card</strong> in a specific rare event. If you convert to a card that has a <strong>[Remove]</strong> tag, the conversion cost is ignored, so do not input a value here.</>,
-        normalEpiphany: (points: number) => <>
-            {`${points} points per card.`}<br/><br/>
-            A <strong>Neutral Card</strong> or <strong>Monster Card</strong> that has an <strong>Epiphany</strong> upgrade.<br/><br/>
-            <strong>Note:</strong> <strong>Regular Epiphany</strong> and <strong>Divine Epiphany</strong> on <strong>Neutral/Monster Cards</strong> are counted separately.<br/>
-            If a <strong>Neutral Card</strong> has a <strong>Divine Epiphany</strong>, you must add +1 here and +1 in the <strong>Divine Epiphany</strong> section.<br/><br/>
-            For some reason, a <strong>Monster Card</strong> with a <strong>Regular Epiphany</strong> does not give any additional points. Only <strong>Divine Epiphany</strong> gives +20 points, so keep that in mind.
-        </>,
+        monsterCardNormal: (points: number) => <>{`${points} points per card.`}<br/><br/><strong>Normal</strong> Rarity Monster Card obtained by defeating an <strong>Elite Boss</strong>.</>,
+        monsterCardRare: (points: number) => <>{`${points} points per card.`}<br/><br/><strong>Rare</strong> Rarity Monster Card obtained by defeating an <strong>Elite Boss</strong>.</>,
+        monsterCardLegendary: (points: number) => <>{`${points} points per card.`}<br/><br/><strong>Legendary</strong> Rarity Monster Card obtained by defeating an <strong>Elite Boss</strong>.</>,
         divineEpiphany: (points: number) => <>{`${points} points per card.`}<br/><br/>Any <strong>Divine Epiphany</strong> upgrade on <strong>All Cards</strong> in your deck.</>,
         forbiddenCard: (points: number) => <>{`${points} points per card.`}<br/><br/>A card obtained from a <strong>chaos event</strong>. These cards will always be saved, based on the in-game description.</>,
-        characterCard: (points: number) => <>{`${points} points per card.`}<br/><br/>When you remove a card, if that card is one of your own <strong>Character/Combatant Cards</strong>, add +1 to this section.</>,
-        cardRemoved: <>{`Points scale: 1=0, 2=10, 3=40...`}<br/><br/>Any card you removed, including <strong>Neutral</strong>, <strong>Monster</strong>, <strong>Forbidden</strong>, or your own <strong>Character Card</strong>.</>,
-        cardDuplication: <>{`Points scale: 1=0, 2=10, 3=40...`}<br/><br/>Any card you duplicate or have <strong>[Replicate]</strong> tag on it.</>,
+        godsHammer: (points: number) => <>{`${points} points per refinement.`}<br/><br/>Points for <strong>Equipment Refinement</strong> (both Normal and God's Hammer).</>,
+        startingCardRemoved: (points: number) => <>{`${points} points per card.`}<br/><br/>Only counts for removing/converting <strong>Starting Cards</strong> (the first 4 combatant cards).<br/>Removing/converting other cards costs 0.<br/>Max 5 removals allowed.</>,
+        cardDuplication: <>{`0, 0, 40, 40 pts sequence.`}<br/><br/>Points for duplicated cards. Max 4 duplicates allowed.<br/>Removing a duplicated card does not grant points.</>,
       },
     },
     settings: {
       title: 'Edit Point Rules',
       close: 'Close settings',
       cardPointsHeader: 'Card Points',
-      scalingHeader: 'CARD REMOVAL/DUPLICATE SCALING',
-      scalingDesc1: "This defines how points are calculated for 'Card Removed' and 'Card Duplication'. The first card of each type is always 0 points.",
-      scalingInitial: 'Initial Increment:',
-      scalingInitialDesc: 'Sets the points awarded for the second card.',
-      scalingStep: 'Increment Step:',
-      scalingStepDesc: 'The amount the point reward increases for each card after the second one.',
-      example: 'Example with default values (10 / 20):',
       reset: 'Reset to Default',
       done: 'Done',
     },
@@ -96,6 +83,7 @@ const translations = {
       removeTooltip: 'Hapus Combatant',
       addTooltip: 'Tambah Combatant',
       limitExceeded: 'Batas Terlampaui',
+      limitReached: 'Batas Tercapai',
       deckNotSavedWarning: 'Deck mungkin tidak tersimpan sepenuhnya',
       statusOk: 'OK',
       statusPerfect: 'Perfect',
@@ -108,33 +96,20 @@ const translations = {
       pointOverflow: (points: number) => `${points} poin lebih`,
       tooltips: {
         neutralCard: (points: number) => <>{`${points} poin per kartu.`}<br/><br/>Kartu umum yang bisa ditemukan di toko atau dari event. Periksa galeri kartu di dalam game jika tidak yakin.</>,
-        monsterCard: (points: number) => <>{`${points} poin per kartu.`}<br/><br/>Kartu yang didapat dengan mengalahkan <strong>Elite Boss</strong>.</>,
-        cardConversion: (points: number) => <>{`${points} poin per kartu.`}<br/><br/>Setiap kartu combatant dapat diubah menjadi <strong>Neutral Card</strong> di event langka tertentu. Jika diubah menjadi kartu yang memiliki tag <strong>[Remove]</strong>, biaya konversi diabaikan, jadi jangan masukkan nilai di sini.</>,
-        normalEpiphany: (points: number) => <>
-            {`${points} poin per kartu.`}<br/><br/>
-            Sebuah <strong>Neutral Card</strong> atau <strong>Monster Card</strong> yang memiliki upgrade <strong>Epiphany</strong>.<br/><br/>
-            <strong>Catatan:</strong> <strong>Regular Epiphany</strong> dan <strong>Divine Epiphany</strong> pada <strong>Neutral/Monster Cards</strong> dihitung secara terpisah.<br/>
-            Jika sebuah <strong>Neutral Card</strong> memiliki <strong>Divine Epiphany</strong>, Anda harus menambahkan +1 di sini dan +1 di bagian <strong>Divine Epiphany</strong>.<br/><br/>
-            Karena alasan tertentu, sebuah <strong>Monster Card</strong> dengan <strong>Regular Epiphany</strong> tidak memberikan poin tambahan apa pun. Hanya <strong>Divine Epiphany</strong> yang memberikan +20 poin, jadi harap diingat.
-        </>,
+        monsterCardNormal: (points: number) => <>{`${points} poin per kartu.`}<br/><br/>Kartu Monster Rarity <strong>Normal</strong> yang didapat dengan mengalahkan <strong>Elite Boss</strong>.</>,
+        monsterCardRare: (points: number) => <>{`${points} poin per kartu.`}<br/><br/>Kartu Monster Rarity <strong>Rare</strong> yang didapat dengan mengalahkan <strong>Elite Boss</strong>.</>,
+        monsterCardLegendary: (points: number) => <>{`${points} poin per kartu.`}<br/><br/>Kartu Monster Rarity <strong>Legendary</strong> yang didapat dengan mengalahkan <strong>Elite Boss</strong>.</>,
         divineEpiphany: (points: number) => <>{`${points} poin per kartu.`}<br/><br/>Setiap upgrade <strong>Divine Epiphany</strong> pada <strong>Semua Kartu</strong> di dalam deck.</>,
         forbiddenCard: (points: number) => <>{`${points} poin per kartu.`}<br/><br/>Kartu yang didapat dari <strong>chaos event</strong>. Kartu-kartu ini akan selalu tersimpan, berdasarkan deskripsi di dalam game.</>,
-        characterCard: (points: number) => <>{`${points} poin per kartu.`}<br/><br/>Saat menghapus kartu, jika kartu tersebut adalah salah satu dari <strong>Character/Combatant Cards</strong> milik sendiri, tambahkan +1 ke bagian ini.</>,
-        cardRemoved: <>{`Skala poin: 1=0, 2=10, 3=40...`}<br/><br/>Setiap kartu yang dihapus akan dihitung, termasuk <strong>Neutral</strong>, <strong>Monster</strong>, <strong>Forbidden</strong>, atau <strong>Character Card</strong> milik sendiri.</>,
-        cardDuplication: <>{`Skala poin: 1=0, 2=10, 3=40...`}<br/><br/>Setiap kartu yang diduplikasi atau kartu yang ada tag <strong>[Replicate]</strong>.</>,
+        godsHammer: (points: number) => <>{`${points} poin per refinement.`}<br/><br/>Poin untuk <strong>Equipment Refinement</strong> (Normal dan God's Hammer).</>,
+        startingCardRemoved: (points: number) => <>{`${points} poin per kartu.`}<br/><br/>Hanya dihitung untuk penghapusan/konversi <strong>Starting Cards</strong> (4 kartu awal combatant).<br/>Menghapus/konversi kartu lain biayanya 0.<br/>Maksimal 5 penghapusan.</>,
+        cardDuplication: <>{`Urutan 0, 0, 40, 40 poin.`}<br/><br/>Poin untuk kartu duplikat. Maksimal 4 duplikat.<br/>Menghapus kartu duplikat tidak memberikan poin.</>,
       },
     },
     settings: {
       title: 'Edit Aturan Poin',
       close: 'Tutup pengaturan',
       cardPointsHeader: 'Poin Kartu',
-      scalingHeader: 'SKALA PENGHAPUSAN/DUPLIKASI KARTU',
-      scalingDesc1: "Ini menentukan bagaimana poin dihitung untuk 'Kartu Dihapus' dan 'Duplikasi Kartu'. Kartu pertama dari setiap jenis selalu 0 poin.",
-      scalingInitial: 'Kenaikan Awal:',
-      scalingInitialDesc: 'Menetapkan poin yang diberikan untuk kartu kedua.',
-      scalingStep: 'Langkah Kenaikan:',
-      scalingStepDesc: 'Jumlah kenaikan hadiah poin untuk setiap kartu setelah kartu kedua.',
-      example: 'Contoh dengan nilai default (10 / 20):',
       reset: 'Reset ke Default',
       done: 'Selesai',
     },
@@ -204,23 +179,46 @@ interface NumberInputProps {
   ariaLabel?: string; // Explicit aria-label for screen readers if label is complex
   isOverLimit: boolean;
   isPerfect?: boolean;
+  max?: number;
+  limitReachedText?: string;
 }
 
-const NumberInput: React.FC<NumberInputProps> = ({ id, label, value, onValueChange, tooltipText, ariaLabel, isOverLimit, isPerfect }) => {
+const NumberInput: React.FC<NumberInputProps> = ({ id, label, value, onValueChange, tooltipText, ariaLabel, isOverLimit, isPerfect, max, limitReachedText }) => {
+  const [showLimit, setShowLimit] = useState(false);
+
+  useEffect(() => {
+    if (showLimit) {
+      const timer = setTimeout(() => setShowLimit(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [showLimit]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const numValue = parseInt(e.target.value, 10);
     if (!isNaN(numValue) && numValue >= 0) {
-      onValueChange(numValue);
+        if (max !== undefined && numValue > max) {
+            onValueChange(max);
+            setShowLimit(true);
+        } else {
+            onValueChange(numValue);
+        }
     } else if (e.target.value === '') {
       onValueChange(0);
     }
   };
 
   const adjustValue = (amount: number) => {
-    onValueChange(Math.max(0, value + amount));
+    const newValue = value + amount;
+    if (newValue < 0) return;
+    if (max !== undefined && newValue > max) {
+        setShowLimit(true);
+        return;
+    }
+    onValueChange(newValue);
   };
   
   const finalAriaLabel = ariaLabel || (typeof label === 'string' ? label : id);
+  const notificationText = limitReachedText || 'Limit Reached';
 
   const getBorderClasses = () => {
     if (value > 0) {
@@ -249,7 +247,12 @@ const NumberInput: React.FC<NumberInputProps> = ({ id, label, value, onValueChan
               {label}
             </label>
         </div>
-      <div className={`flex items-center flex-shrink-0 bg-[var(--input-bg)] rounded-lg border transition-colors duration-300 focus-within:ring-1 ${getBorderClasses()}`}>
+      <div className={`flex items-center flex-shrink-0 bg-[var(--input-bg)] rounded-lg border transition-colors duration-300 focus-within:ring-1 ${getBorderClasses()} relative`}>
+        {showLimit && (
+            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg pointer-events-none whitespace-nowrap z-20 fade-in">
+                {notificationText}
+            </div>
+        )}
         <button onClick={() => adjustValue(-1)} className="h-10 w-9 flex items-center justify-center text-slate-200 hover:text-white hover:bg-white/5 rounded-l-lg transition-colors" aria-label={`Decrease ${finalAriaLabel}`}>
           <ChevronDown />
         </button>
@@ -259,6 +262,7 @@ const NumberInput: React.FC<NumberInputProps> = ({ id, label, value, onValueChan
           value={value}
           onChange={handleInputChange}
           min="0"
+          max={max}
           className="w-16 bg-transparent text-white p-2 text-center focus:outline-none"
         />
         <button onClick={() => adjustValue(1)} className="h-10 w-9 flex items-center justify-center text-slate-200 hover:text-white hover:bg-white/5 rounded-r-lg transition-colors" aria-label={`Increase ${finalAriaLabel}`}>
@@ -331,28 +335,19 @@ const RulesIcon = () => (
 
 
 const CalculatorInstance: React.FC<CalculatorInstanceProps> = ({ instanceIndex, values, onValueChange, onReset, rules, isLast, onAdd, onRemove, canAdd, canRemove, t }) => {
-    const combatantCardPoints = useMemo(() => {
+    const totalPoints = useMemo(() => {
         return (
             values.neutralCard * rules.NEUTRAL_CARD +
-            values.monsterCard * rules.MONSTER_CARD +
-            values.cardConversion * rules.CARD_CONVERSION +
-            values.normalEpiphany * rules.NORMAL_EPIPHANY +
+            values.monsterCardNormal * rules.MONSTER_CARD_NORMAL +
+            values.monsterCardRare * rules.MONSTER_CARD_RARE +
+            values.monsterCardLegendary * rules.MONSTER_CARD_LEGENDARY +
             values.divineEpiphany * rules.DIVINE_EPIPHANY +
-            values.forbiddenCard * rules.FORBIDDEN_CARD
+            values.forbiddenCard * rules.FORBIDDEN_CARD +
+            values.startingCardRemoved * rules.STARTING_CARD_REMOVED +
+            calculateDuplicationPoints(values.cardDuplication) +
+            values.godsHammer * rules.GODS_HAMMER
         );
-    }, [values.neutralCard, values.monsterCard, values.cardConversion, values.normalEpiphany, values.divineEpiphany, values.forbiddenCard, rules]);
-
-    const removalDuplicationPoints = useMemo(() => {
-        return (
-            values.characterCard * rules.CHARACTER_CARD +
-            calculateSpecialPoints(values.cardRemoved, rules.SPECIAL_ACTION_INITIAL_INCREMENT, rules.SPECIAL_ACTION_INCREMENT_STEP) +
-            calculateSpecialPoints(values.cardDuplication, rules.SPECIAL_ACTION_INITIAL_INCREMENT, rules.SPECIAL_ACTION_INCREMENT_STEP)
-        );
-    }, [values.characterCard, values.cardRemoved, values.cardDuplication, rules]);
-
-    const totalPoints = useMemo(() => {
-        return combatantCardPoints + removalDuplicationPoints;
-    }, [combatantCardPoints, removalDuplicationPoints]);
+    }, [values, rules]);
 
     const tierLimit = useMemo(() => {
         return calculateTierLimit(values.mapTier);
@@ -459,27 +454,50 @@ const CalculatorInstance: React.FC<CalculatorInstanceProps> = ({ instanceIndex, 
 
             <div className="flex flex-col md:flex-row gap-3 md:gap-6">
                 <div className="flex flex-col gap-3 flex-1 min-w-0">
-                    <NumberInput isOverLimit={!isWithinLimit} isPerfect={isPerfect} id={`neutral-card-${instanceIndex}`} label="Neutral Card" value={values.neutralCard} onValueChange={(v) => onValueChange('neutralCard', v)} tooltipText={t.calculator.tooltips.neutralCard(rules.NEUTRAL_CARD)} />
-                    <NumberInput isOverLimit={!isWithinLimit} isPerfect={isPerfect} id={`monster-card-${instanceIndex}`} label="Monster Card" value={values.monsterCard} onValueChange={(v) => onValueChange('monsterCard', v)} tooltipText={t.calculator.tooltips.monsterCard(rules.MONSTER_CARD)} />
-                    <NumberInput isOverLimit={!isWithinLimit} isPerfect={isPerfect} id={`card-conversion-${instanceIndex}`} label="Card Conversion" value={values.cardConversion} onValueChange={(v) => onValueChange('cardConversion', v)} tooltipText={t.calculator.tooltips.cardConversion(rules.CARD_CONVERSION)} />
+                    <NumberInput isOverLimit={!isWithinLimit} isPerfect={isPerfect} id={`neutral-card-${instanceIndex}`} label="Neutral Card" value={values.neutralCard} onValueChange={(v) => onValueChange('neutralCard', v)} tooltipText={t.calculator.tooltips.neutralCard(rules.NEUTRAL_CARD)} limitReachedText={t.calculator.limitReached} />
                     <NumberInput 
-                        isOverLimit={!isWithinLimit}
-                        isPerfect={isPerfect}
-                        id={`normal-epiphany-${instanceIndex}`} 
-                        label={<>N/M Card<br/>Epiphany</>}
-                        ariaLabel="Neutral Monster Epiphany"
-                        value={values.normalEpiphany} 
-                        onValueChange={(v) => onValueChange('normalEpiphany', v)} 
-                        tooltipText={t.calculator.tooltips.normalEpiphany(rules.NORMAL_EPIPHANY)} 
+                        isOverLimit={!isWithinLimit} 
+                        isPerfect={isPerfect} 
+                        id={`monster-normal-${instanceIndex}`} 
+                        label={<span>Monster Card <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-slate-400 via-white to-slate-400 bg-[length:200%_auto] animate-shimmer">(Normal)</span></span>} 
+                        value={values.monsterCardNormal} 
+                        onValueChange={(v) => onValueChange('monsterCardNormal', v)} 
+                        tooltipText={t.calculator.tooltips.monsterCardNormal(rules.MONSTER_CARD_NORMAL)} 
+                        limitReachedText={t.calculator.limitReached}
                     />
-                    <NumberInput isOverLimit={!isWithinLimit} isPerfect={isPerfect} id={`divine-epiphany-${instanceIndex}`} label="Divine Epiphany" value={values.divineEpiphany} onValueChange={(v) => onValueChange('divineEpiphany', v)} tooltipText={t.calculator.tooltips.divineEpiphany(rules.DIVINE_EPIPHANY)} />
-                    <NumberInput isOverLimit={!isWithinLimit} isPerfect={isPerfect} id={`forbidden-card-${instanceIndex}`} label="Forbidden Card" value={values.forbiddenCard} onValueChange={(v) => onValueChange('forbiddenCard', v)} tooltipText={t.calculator.tooltips.forbiddenCard(rules.FORBIDDEN_CARD)} />
+                    <NumberInput 
+                        isOverLimit={!isWithinLimit} 
+                        isPerfect={isPerfect} 
+                        id={`monster-rare-${instanceIndex}`} 
+                        label={<span>Monster Card <span className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-cyan-400 to-blue-600 bg-[length:200%_auto] animate-shimmer">(Rare)</span></span>} 
+                        value={values.monsterCardRare} 
+                        onValueChange={(v) => onValueChange('monsterCardRare', v)} 
+                        tooltipText={t.calculator.tooltips.monsterCardRare(rules.MONSTER_CARD_RARE)} 
+                        limitReachedText={t.calculator.limitReached}
+                    />
+                    <NumberInput 
+                        isOverLimit={!isWithinLimit} 
+                        isPerfect={isPerfect} 
+                        id={`monster-legendary-${instanceIndex}`} 
+                        label={
+                            <span>
+                                Monster Card <span className="font-bold text-transparent bg-clip-text bg-[linear-gradient(to_right,#ff66cc,#a855f7,#3b82f6,#22d3ee,#facc15,#ff66cc,#a855f7,#3b82f6)] bg-[length:200%_auto] animate-shimmer drop-shadow-[0_0_10px_rgba(168,85,247,0.3)]">(Legendary)</span>
+                            </span>
+                        } 
+                        value={values.monsterCardLegendary} 
+                        onValueChange={(v) => onValueChange('monsterCardLegendary', v)} 
+                        tooltipText={t.calculator.tooltips.monsterCardLegendary(rules.MONSTER_CARD_LEGENDARY)} 
+                        limitReachedText={t.calculator.limitReached}
+                    />
+                    <NumberInput isOverLimit={!isWithinLimit} isPerfect={isPerfect} id={`forbidden-card-${instanceIndex}`} label="Forbidden Card" value={values.forbiddenCard} onValueChange={(v) => onValueChange('forbiddenCard', v)} tooltipText={t.calculator.tooltips.forbiddenCard(rules.FORBIDDEN_CARD)} limitReachedText={t.calculator.limitReached} />
                 </div>
                 
                 <div className="flex flex-col gap-3 flex-1 min-w-0">
-                    <NumberInput isOverLimit={!isWithinLimit} isPerfect={isPerfect} id={`character-card-${instanceIndex}`} label="Character Card" value={values.characterCard} onValueChange={(v) => onValueChange('characterCard', v)} tooltipText={t.calculator.tooltips.characterCard(rules.CHARACTER_CARD)} />
-                    <NumberInput isOverLimit={!isWithinLimit} isPerfect={isPerfect} id={`card-removed-${instanceIndex}`} label="Card Removed" value={values.cardRemoved} onValueChange={(v) => onValueChange('cardRemoved', v)} tooltipText={t.calculator.tooltips.cardRemoved} />
-                    <NumberInput isOverLimit={!isWithinLimit} isPerfect={isPerfect} id={`card-duplication-${instanceIndex}`} label="Card Duplication" value={values.cardDuplication} onValueChange={(v) => onValueChange('cardDuplication', v)} tooltipText={t.calculator.tooltips.cardDuplication} />
+                    <NumberInput isOverLimit={!isWithinLimit} isPerfect={isPerfect} id={`divine-epiphany-${instanceIndex}`} label="Divine Epiphany" value={values.divineEpiphany} onValueChange={(v) => onValueChange('divineEpiphany', v)} tooltipText={t.calculator.tooltips.divineEpiphany(rules.DIVINE_EPIPHANY)} limitReachedText={t.calculator.limitReached} />
+                    <NumberInput isOverLimit={!isWithinLimit} isPerfect={isPerfect} id={`gods-hammer-${instanceIndex}`} label="Equipment Refinement" value={values.godsHammer} onValueChange={(v) => onValueChange('godsHammer', v)} tooltipText={t.calculator.tooltips.godsHammer(rules.GODS_HAMMER)} limitReachedText={t.calculator.limitReached} />
+                    <div className="h-px bg-white/10 my-1"></div>
+                    <NumberInput isOverLimit={!isWithinLimit} isPerfect={isPerfect} id={`starting-removed-${instanceIndex}`} label="Starting Card Removed" value={values.startingCardRemoved} onValueChange={(v) => onValueChange('startingCardRemoved', v)} tooltipText={t.calculator.tooltips.startingCardRemoved(rules.STARTING_CARD_REMOVED)} max={5} limitReachedText={t.calculator.limitReached} />
+                    <NumberInput isOverLimit={!isWithinLimit} isPerfect={isPerfect} id={`card-duplication-${instanceIndex}`} label="Card Duplication" value={values.cardDuplication} onValueChange={(v) => onValueChange('cardDuplication', v)} tooltipText={t.calculator.tooltips.cardDuplication} max={4} limitReachedText={t.calculator.limitReached} />
                 </div>
             </div>
             
@@ -580,20 +598,17 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ rules, setRules, onClose,
         setRules(DEFAULT_POINTS);
     };
     
-    const normalRules = Object.entries(rules).filter(([key]) => !key.startsWith('SPECIAL_ACTION'));
-    const specialRules = Object.entries(rules).filter(([key]) => key.startsWith('SPECIAL_ACTION'));
-
-    const ruleLabels: { [key: string]: string } = {
-        'NEUTRAL_CARD': 'Neutral Card',
-        'MONSTER_CARD': 'Monster Card',
-        'CARD_CONVERSION': 'Card Conversion',
-        'NORMAL_EPIPHANY': 'Neutral/Monster Epiphany',
-        'DIVINE_EPIPHANY': 'Divine Epiphany',
-        'FORBIDDEN_CARD': 'Forbidden Card',
-        'CHARACTER_CARD': 'Character Card',
-        'SPECIAL_ACTION_INITIAL_INCREMENT': 'Initial Increment',
-        'SPECIAL_ACTION_INCREMENT_STEP': 'Increment Step',
-    };
+    // Explicit list to control order and excluding helper functions if any
+    const displayRules: (keyof Rules)[] = [
+        'NEUTRAL_CARD',
+        'MONSTER_CARD_NORMAL',
+        'MONSTER_CARD_RARE',
+        'MONSTER_CARD_LEGENDARY',
+        'DIVINE_EPIPHANY',
+        'FORBIDDEN_CARD',
+        'GODS_HAMMER',
+        'STARTING_CARD_REMOVED'
+    ];
 
     return (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 fade-in">
@@ -604,39 +619,17 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ rules, setRules, onClose,
                 </div>
                 <div className="flex flex-col gap-2 max-h-[75vh] sm:max-h-[60vh] overflow-y-auto pr-2">
                     <h3 className="text-slate-400 font-semibold text-xs uppercase tracking-wider">{t.settings.cardPointsHeader}</h3>
-                    {normalRules.map(([key, value]) => (
+                    {displayRules.map((key) => (
                         <RuleInput
                             key={key}
-                            label={ruleLabels[key] || key.replace(/_/g, ' ')}
-                            value={value as number}
-                            onChange={(e) => handleRuleChange(key as keyof Rules, e.target.value)}
+                            label={key === 'GODS_HAMMER' ? 'Equipment Refinement' : key.replace(/_/g, ' ')}
+                            value={rules[key] as number}
+                            onChange={(e) => handleRuleChange(key, e.target.value)}
                         />
                     ))}
-                    <h3 className="text-slate-400 font-semibold text-xs uppercase tracking-wider mt-4">{t.settings.scalingHeader}</h3>
-                    <div className="text-xs text-slate-500 mb-2 space-y-2">
-                        <p>{t.settings.scalingDesc1}</p>
-                        <ul className="list-disc list-inside space-y-1 pl-2">
-                            <li><span className="font-semibold text-slate-400">{t.settings.scalingInitial}</span> {t.settings.scalingInitialDesc}</li>
-                            <li><span className="font-semibold text-slate-400">{t.settings.scalingStep}</span> {t.settings.scalingStepDesc}</li>
-                        </ul>
-                        <div>
-                            <p className="font-semibold text-slate-400">{t.settings.example}</p>
-                            <div className="pl-4 mt-1 text-slate-500/90 leading-relaxed">
-                                1st card: <span className="font-mono">0</span> pts<br/>
-                                2nd card: <span className="font-mono">10</span> pts<br/>
-                                3rd card: <span className="font-mono">40</span> pts (adds 30)<br/>
-                                4th card: <span className="font-mono">90</span> pts (adds 50)
-                            </div>
-                        </div>
-                    </div>
-                    {specialRules.map(([key, value]) => (
-                         <RuleInput
-                            key={key}
-                            label={ruleLabels[key] || key}
-                            value={value as number}
-                            onChange={(e) => handleRuleChange(key as keyof Rules, e.target.value)}
-                        />
-                    ))}
+                    <p className="text-xs text-slate-500 mt-4 italic">
+                        Note: Card Duplication logic (0,0,40,40) is fixed.
+                    </p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-4 mt-4">
                     <button onClick={handleResetToDefault} className="flex-1 p-3 rounded-lg bg-red-500/20 text-red-300 hover:bg-red-500/40 transition-colors duration-200 font-semibold">{t.settings.reset}</button>
@@ -759,16 +752,24 @@ const LanguageSwitch: React.FC<{
 // Main App component
 const App: React.FC = () => {
     const initialCalculatorState: Omit<CalculatorState, 'characterName'> = {
-        mapTier: 1, neutralCard: 0, monsterCard: 0, cardConversion: 0, normalEpiphany: 0, divineEpiphany: 0,
-        forbiddenCard: 0, cardRemoved: 0, characterCard: 0, cardDuplication: 0,
+        mapTier: 1, 
+        neutralCard: 0, 
+        monsterCardNormal: 0,
+        monsterCardRare: 0,
+        monsterCardLegendary: 0,
+        divineEpiphany: 0,
+        forbiddenCard: 0, 
+        startingCardRemoved: 0, 
+        cardDuplication: 0,
+        godsHammer: 0,
     };
     const defaultState: CalculatorState[] = [
         { ...initialCalculatorState, characterName: 'Combatant 1' },
     ];
     
     const STORAGE_KEYS = {
-        CALCULATORS: 'czn_tracker_calculators',
-        RULES: 'czn_tracker_rules',
+        CALCULATORS: 'czn_tracker_calculators_v3', // Version bump for new structure
+        RULES: 'czn_tracker_rules_v3',
         LANGUAGE: 'czn_tracker_language'
     };
 
@@ -888,14 +889,14 @@ const App: React.FC = () => {
         return (
             calc.mapTier !== initialCalculatorState.mapTier ||
             calc.neutralCard !== initialCalculatorState.neutralCard ||
-            calc.monsterCard !== initialCalculatorState.monsterCard ||
-            calc.cardConversion !== initialCalculatorState.cardConversion ||
-            calc.normalEpiphany !== initialCalculatorState.normalEpiphany ||
+            calc.monsterCardNormal !== initialCalculatorState.monsterCardNormal ||
+            calc.monsterCardRare !== initialCalculatorState.monsterCardRare ||
+            calc.monsterCardLegendary !== initialCalculatorState.monsterCardLegendary ||
             calc.divineEpiphany !== initialCalculatorState.divineEpiphany ||
             calc.forbiddenCard !== initialCalculatorState.forbiddenCard ||
-            calc.cardRemoved !== initialCalculatorState.cardRemoved ||
-            calc.characterCard !== initialCalculatorState.characterCard ||
-            calc.cardDuplication !== initialCalculatorState.cardDuplication
+            calc.startingCardRemoved !== initialCalculatorState.startingCardRemoved ||
+            calc.cardDuplication !== initialCalculatorState.cardDuplication ||
+            calc.godsHammer !== initialCalculatorState.godsHammer
         );
     };
 
