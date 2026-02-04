@@ -122,6 +122,16 @@
       .animate-text-slide {
         animation: textSlide 10s cubic-bezier(0.4, 0, 0.2, 1) infinite;
       }
+
+      @keyframes shimmer {
+        0% { background-position: 200% center; }
+        100% { background-position: -200% center; }
+      }
+
+      .animate-shimmer {
+        background-size: 200% auto;
+        animation: shimmer 8s linear infinite;
+      }
     </style>
   <script type="importmap">
 {
