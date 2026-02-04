@@ -998,7 +998,7 @@ const App: React.FC = () => {
                     <span>{t.app.howToUse}</span>
                 </a>
                 <a
-                    href="https://docs.google.com/spreadsheets/d/1diExmbtbyTGMmB_-RfQvn0in-DM-gPjQu14XjviIJ0Y/edit?gid=1278070975#gid=1278070975"
+                    href="https://raw.githubusercontent.com/DEX-1101/CZN-Save-Data-Tracker/refs/heads/main/rule.png"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 bg-black/60 border border-white/10 text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-600/20 hover:border-blue-400/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] transition-all duration-300 font-medium active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 transform-gpu"
