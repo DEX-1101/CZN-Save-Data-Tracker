@@ -1,7 +1,7 @@
-== Updated Clarification Tooltip (?) ==
-For counting Monster Cards that have Epiphany in the N/M Card
-Epiphany section.
-Read it if you're planning to make a deck that includes a Monster Card.
+04/02/2026
+- Update new Save Data logic
+- Add Tier 16 Save Data 
+- New Refinement and Monster Card rarity input added
 
 19/11/2025 
 - Value now stored on your local browser storage.
