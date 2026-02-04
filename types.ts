@@ -3,12 +3,12 @@ export interface CalculatorState {
   characterName: string;
   mapTier: number;
   neutralCard: number;
-  monsterCard: number;
-  cardConversion: number;
-  normalEpiphany: number;
+  monsterCardNormal: number;
+  monsterCardRare: number;
+  monsterCardLegendary: number;
   divineEpiphany: number;
   forbiddenCard: number;
-  cardRemoved: number;
-  characterCard: number;
+  startingCardRemoved: number;
   cardDuplication: number;
+  godsHammer: number;
 }
