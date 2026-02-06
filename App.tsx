@@ -40,7 +40,7 @@ const translations = {
         monsterCardLegendary: (points: number) => <>{`${points} points per card.`}<br/><br/><strong>Legendary</strong> Rarity Monster Card obtained by defeating an <strong>Elite Boss</strong>.</>,
         divineEpiphany: (points: number) => <>{`${points} points per card.`}<br/><br/>Any <strong>Divine Epiphany</strong> upgrade on <strong>All Cards</strong> in your deck.</>,
         forbiddenCard: (points: number) => <>{`${points} points per card.`}<br/><br/>A card obtained from a <strong>chaos event</strong>. These cards will always be saved, based on the in-game description.</>,
-        godsHammer: (points: number) => <>{`${points} points per refinement.`}<br/><br/>Points for <strong>Equipment Refinement</strong> (both Normal and God's Hammer).</>,
+        godsHammer: (points: number) => <>{`${points} points per refinement.`}<br/><br/>Each<strong>Equipment Refinement</strong> (both Normal and God's Hammer) now add a point.</>,
         startingCardRemoved: (points: number) => <>{`${points} points per card.`}<br/><br/>Only counts for removing/converting <strong>Starting Cards</strong> (the first 4 combatant cards).<br/>Removing/converting other cards costs 0.<br/>Max 5 removals allowed.</>,
         cardDuplication: <>{`0, 0, 40, 40 pts sequence.`}<br/><br/>Points for duplicated cards. Max 4 duplicates allowed.<br/>Removing a duplicated card does not grant points.</>,
       },
