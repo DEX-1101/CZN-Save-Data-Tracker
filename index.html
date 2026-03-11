@@ -24,12 +24,21 @@
       body {
         font-family: 'Inter', sans-serif;
         background-color: var(--bg-color);
+        min-height: 100vh;
+        position: relative;
+      }
+      
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
         background-image: url("https://raw.githubusercontent.com/DEX-1101/x1101/refs/heads/main/src/reona.webp");
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
         background-repeat: no-repeat;
-        min-height: 100vh;
+        opacity: 0.35; /* change opacity here */
+        z-index: -1;
       }
       
       ::-webkit-scrollbar {
